@@ -21,7 +21,7 @@
 #ifndef PATH_ELEMENT_H
 #define PATH_ELEMENT_H
 
-#include <simple-widget.h>
+#include <simple-widgets.h>
 
 G_BEGIN_DECLS
 

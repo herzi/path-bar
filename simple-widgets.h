@@ -18,8 +18,8 @@
  * USA
  */
 
-#ifndef SIMPLE_WIDGET_H
-#define SIMPLE_WIDGET_H
+#ifndef SIMPLE_WIDGETS_H
+#define SIMPLE_WIDGETS_H
 
 #include <gtk/gtk.h>
 
@@ -46,6 +46,6 @@ struct _ProgressSimpleWidgetClass
 
 G_END_DECLS
 
-#endif /* !SIMPLE_WIDGET_H */
+#endif /* !SIMPLE_WIDGETS_H */
 
 /* vim:set et sw=2 cino=t0,f0,(0,{s,>2s,n-1s,^-1s,e2s: */

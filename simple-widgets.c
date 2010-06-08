@@ -18,7 +18,7 @@
  * USA
  */
 
-#include "simple-widget.h"
+#include "simple-widgets.h"
 
 G_DEFINE_TYPE (ProgressSimpleWidget, progress_simple_widget, GTK_TYPE_WIDGET);
 
