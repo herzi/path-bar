@@ -28,11 +28,13 @@ main (int   argc,
       char**argv)
 {
   GtkWidget* window;
+  GtkWidget* box;
   GtkWidget* path;
 
   gtk_init (&argc, &argv);
 
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  box    = gtk_vbox_new (FALSE, 0);
   path   = progress_path_bar_new ();
 
   gtk_window_set_default_size (GTK_WINDOW (window), 400, 300);
@@ -44,7 +46,8 @@ main (int   argc,
   progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, "GTK+");
   progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Path Bar"));
 
-  gtk_container_add (GTK_CONTAINER (window), path);
+  gtk_box_pack_start (GTK_BOX (box), path, FALSE, FALSE, 0);
+  gtk_container_add (GTK_CONTAINER (window), box);
 
   gtk_widget_show_all (window);
   gtk_main ();

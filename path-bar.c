@@ -83,7 +83,7 @@ expose_event (GtkWidget     * widget,
   cairo_set_line_width (cr, 1.0);
   cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.5);
   cairo_save (cr);
-  cairo_arc (cr, 4.5, 20.5, 4.0, 0.5 * G_PI, G_PI);
+  cairo_arc (cr, 4.5, 19.5, 4.0, 0.5 * G_PI, G_PI);
   cairo_arc (cr, 4.5, 4.5, 4.0, G_PI, 1.5 * G_PI);
   for (iter = PRIV (widget)->elements; iter; iter = iter->next)
     {
@@ -92,8 +92,8 @@ expose_event (GtkWidget     * widget,
       if (iter->prev)
         {
           cairo_new_path (cr);
-          cairo_move_to (cr, 0.5, 24.5);
-          cairo_line_to (cr, 12.5, 12.5);
+          cairo_move_to (cr, 0.5, 23.5);
+          cairo_line_to (cr, 12.5, 12.0);
           cairo_line_to (cr, 0.5, 0.5);
           cairo_translate (cr, 12.0, 0.0);
           intern += 12.0;
@@ -139,8 +139,8 @@ expose_event (GtkWidget     * widget,
           cairo_pattern_add_color_stop_rgba (pattern, 1.0, 1.0, 1.0, 1.0, 0.15);
 
           cairo_line_to (cr, 0.5, 0.5);
-          cairo_line_to (cr, 12.5, 12.5);
-          cairo_line_to (cr, 0.5, 24.5);
+          cairo_line_to (cr, 12.5, 12.0);
+          cairo_line_to (cr, 0.5, 23.5);
           cairo_close_path (cr);
 
           cairo_save (cr);
@@ -155,12 +155,36 @@ expose_event (GtkWidget     * widget,
     }
   cairo_restore (cr);
   cairo_arc (cr, widget->allocation.width - 4.5, 4.5, 4.0, 1.5 * G_PI, 2.0 * G_PI);
-  cairo_arc (cr, widget->allocation.width - 4.5, 20.5, 4.0, 0.0, 0.5 * G_PI);
+  cairo_arc (cr, widget->allocation.width - 4.5, 19.5, 4.0, 0.0, 0.5 * G_PI);
   cairo_close_path (cr);
   cairo_stroke (cr);
 
   cairo_destroy (cr);
   return FALSE;
+}
+
+static void
+size_request (GtkWidget     * widget,
+              GtkRequisition* req)
+{
+  GList* iter;
+  for (iter = PRIV (widget)->elements; iter; iter = iter->next)
+    {
+      ProgressPathBarElement* element = iter->data;
+
+      if (element->icon)
+        {
+          req->height = MAX (req->height, 2 * 4 + gdk_pixbuf_get_height (element->icon));
+        }
+      if (element->layout)
+        {
+          PangoRectangle  rectangle;
+          pango_layout_get_extents (element->layout, NULL, &rectangle);
+          req->height = MAX (req->height, 2 * 4 + rectangle.height / PANGO_SCALE);
+        }
+    }
+
+  GTK_WIDGET_CLASS (progress_path_bar_parent_class)->size_request (widget, req);
 }
 
 static void
@@ -200,6 +224,7 @@ progress_path_bar_class_init (ProgressPathBarClass* self_class)
   object_class->finalize = finalize;
 
   widget_class->expose_event = expose_event;
+  widget_class->size_request = size_request;
   widget_class->style_set    = style_set;
 
   g_type_class_add_private (self_class, sizeof (ProgressPathBarPrivate));
