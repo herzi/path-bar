@@ -21,7 +21,7 @@
 #ifndef PATH_BAR_H
 #define PATH_BAR_H
 
-#include <gtk/gtk.h>
+#include <simple-widget.h>
 
 G_BEGIN_DECLS
 
@@ -36,13 +36,13 @@ GtkWidget* progress_path_bar_new      (void);
 
 struct _ProgressPathBar
 {
-  GtkWidget               base_instance;
-  ProgressPathBarPrivate* _private;
+  ProgressSimpleWidget       base_instance;
+  ProgressPathBarPrivate   * _private;
 };
 
 struct _ProgressPathBarClass
 {
-  GtkWidgetClass          base_class;
+  ProgressSimpleWidgetClass  base_class;
 };
 
 G_END_DECLS
