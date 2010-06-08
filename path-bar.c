@@ -64,12 +64,14 @@ expose_event (GtkWidget     * widget,
           cairo_move_to (cr, 0.0, 16.0);
           cairo_line_to (cr, 8.0, 8.0);
           cairo_line_to (cr, 0.0, 0.0);
+          cairo_translate (cr, 8.0, 0.0);
         }
       else
         {
           cairo_arc (cr, 4.5, 20.5, 4.0, 0.5 * G_PI, G_PI);
           cairo_arc (cr, 4.5, 4.5, 4.0, G_PI, 1.5 * G_PI);
         }
+      cairo_translate (cr, 4.0, 0.0);
 
       if (elements[i].icon_name)
         {
@@ -80,11 +82,13 @@ expose_event (GtkWidget     * widget,
           gdk_cairo_set_source_pixbuf (cr, buf, 0.0, 0.0);
           cairo_paint (cr);
           cairo_restore (cr);
+          cairo_translate (cr, gdk_pixbuf_get_width (buf) + 4.0, 0.0);
           g_object_unref (buf);
         }
 
       if (i >= G_N_ELEMENTS (elements) - 1)
         {
+          /* FIXME: restore original coordinates */
           cairo_arc (cr, widget->allocation.width - 4.5, 4.5, 4.0, 1.5 * G_PI, 2.0 * G_PI);
           cairo_arc (cr, widget->allocation.width - 4.5, 20.5, 4.0, 0.0, 0.5 * G_PI);
         }
