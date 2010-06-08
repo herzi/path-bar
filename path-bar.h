@@ -30,9 +30,15 @@ typedef struct _ProgressPathBarClass   ProgressPathBarClass;
 typedef struct _ProgressPathBarPrivate ProgressPathBarPrivate;
 
 #define PROGRESS_TYPE_PATH_BAR         (progress_path_bar_get_type ())
+#define PROGRESS_PATH_BAR(i)           (G_TYPE_CHECK_INSTANCE_CAST ((i), PROGRESS_TYPE_PATH_BAR, ProgressPathBar))
+
+#define PROGRESS_IS_PATH_BAR(i)        (G_TYPE_CHECK_INSTANCE_TYPE ((i), PROGRESS_TYPE_PATH_BAR))
 
 GType      progress_path_bar_get_type (void);
 GtkWidget* progress_path_bar_new      (void);
+void       progress_path_bar_append   (ProgressPathBar* self,
+                                       gchar const    * icon,
+                                       gchar const    * label);
 
 struct _ProgressPathBar
 {

@@ -20,9 +20,6 @@
 
 #include "path-bar.h"
 
-#define GETTEXT_PACKAGE NULL
-#include <glib/gi18n-lib.h>
-
 typedef struct _ProgressPathBarElement
 {
   gchar* icon_name;
@@ -39,26 +36,9 @@ struct _ProgressPathBarPrivate
 G_DEFINE_TYPE (ProgressPathBar, progress_path_bar, PROGRESS_TYPE_SIMPLE_WIDGET);
 
 static void
-add_element (ProgressPathBar* self,
-             gchar const    * icon_name,
-             gchar const    * label)
-{
-  ProgressPathBarElement* element = g_slice_new (ProgressPathBarElement);
-  element->icon_name = g_strdup (icon_name);
-  element->label     = g_strdup (label);
-
-  PRIV (self)->elements = g_list_append (PRIV (self)->elements, element);
-}
-
-static void
 progress_path_bar_init (ProgressPathBar* self G_GNUC_UNUSED)
 {
   PRIV (self) = G_TYPE_INSTANCE_GET_PRIVATE (self, PROGRESS_TYPE_PATH_BAR, ProgressPathBarPrivate);
-
-  add_element (self, GTK_STOCK_HOME, NULL);
-  add_element (self, NULL, N_("Programming"));
-  add_element (self, NULL, "GTK+");
-  add_element (self, NULL, N_("Path Bar"));
 }
 
 static void
@@ -135,7 +115,8 @@ expose_event (GtkWidget     * widget,
 
           cairo_save (cr);
           cairo_new_path (cr);
-          cairo_translate (cr, 0.0, 18.0 - pango_layout_get_baseline (layout) / PANGO_SCALE); //20 - pango_layout_get_baseline (layout) + 0.5);
+          cairo_translate (cr, 0.0, 18.0 - pango_layout_get_baseline (layout) / PANGO_SCALE);
+          cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.75);
           pango_cairo_show_layout (cr, layout);
           cairo_restore (cr);
 
@@ -189,6 +170,22 @@ progress_path_bar_class_init (ProgressPathBarClass* self_class)
   widget_class->expose_event = expose_event;
 
   g_type_class_add_private (self_class, sizeof (ProgressPathBarPrivate));
+}
+
+void
+progress_path_bar_append (ProgressPathBar* self,
+                          gchar const    * icon,
+                          gchar const    * label)
+{
+  ProgressPathBarElement* element;
+
+  g_return_if_fail (PROGRESS_IS_PATH_BAR (self));
+
+  element = g_slice_new (ProgressPathBarElement);
+  element->icon_name = g_strdup (icon);
+  element->label     = g_strdup (label);
+
+  PRIV (self)->elements = g_list_append (PRIV (self)->elements, element);
 }
 
 GtkWidget*

@@ -21,6 +21,8 @@
 #include <gtk/gtk.h>
 #include <path-bar.h>
 
+#include <glib/gi18n.h>
+
 int
 main (int   argc,
       char**argv)
@@ -36,6 +38,11 @@ main (int   argc,
   gtk_window_set_default_size (GTK_WINDOW (window), 400, 300);
   g_signal_connect (window, "destroy",
                     G_CALLBACK (gtk_main_quit), NULL);
+
+  progress_path_bar_append (PROGRESS_PATH_BAR (path), GTK_STOCK_HOME, NULL);
+  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Programming"));
+  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, "GTK+");
+  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Path Bar"));
 
   gtk_container_add (GTK_CONTAINER (window), path);
 
