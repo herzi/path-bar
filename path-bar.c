@@ -22,9 +22,10 @@
 
 typedef struct _ProgressPathBarElement
 {
-  gchar    * icon_name;
-  GdkPixbuf* icon;
-  gchar* label;
+  gchar      * icon_name;
+  GdkPixbuf  * icon;
+  gchar      * label;
+  PangoLayout* layout;
 } ProgressPathBarElement;
 
 struct _ProgressPathBarPrivate
@@ -53,6 +54,10 @@ free_element (gpointer  data,
       g_object_unref (element->icon);
     }
   g_free (element->label);
+  if (element->layout)
+    {
+      g_object_unref (element->layout);
+    }
   g_slice_free (ProgressPathBarElement, element);
 }
 
@@ -106,20 +111,18 @@ expose_event (GtkWidget     * widget,
           cairo_translate (cr, gdk_pixbuf_get_width (element->icon) + 4.0, 0.0);
           intern += gdk_pixbuf_get_width (element->icon) + 4.0;
         }
-      if (element->label)
+      if (element->layout)
         {
-          /* FIXME: cache the layout after realize() and update on every "style-set" */
-          PangoLayout* layout = gtk_widget_create_pango_layout (widget, element->label);
           PangoRectangle  logical;
           cairo_path_t* path = cairo_copy_path (cr);
 
-          pango_layout_get_extents (layout, NULL, &logical);
+          pango_layout_get_extents (element->layout, NULL, &logical);
 
           cairo_save (cr);
           cairo_new_path (cr);
-          cairo_translate (cr, 0.0, 18.0 - pango_layout_get_baseline (layout) / PANGO_SCALE);
+          cairo_translate (cr, 0.0, 18.0 - pango_layout_get_baseline (element->layout) / PANGO_SCALE);
           cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.75);
-          pango_cairo_show_layout (cr, layout);
+          pango_cairo_show_layout (cr, element->layout);
           cairo_restore (cr);
 
           cairo_new_path (cr);
@@ -127,7 +130,6 @@ expose_event (GtkWidget     * widget,
           cairo_translate (cr, logical.width / PANGO_SCALE + 4.0, 0.0);
           intern += logical.width / PANGO_SCALE + 4.0;
           cairo_path_destroy (path);
-          g_object_unref (layout);
         }
 
       if (iter->next)
@@ -181,6 +183,11 @@ style_set (GtkWidget* widget,
           g_object_unref (element->icon);
           element->icon = gtk_widget_render_icon (widget, element->icon_name, GTK_ICON_SIZE_MENU, NULL);
         }
+      if (element->layout)
+        {
+          g_object_unref (element->layout);
+          element->layout = gtk_widget_create_pango_layout (widget, element->label);
+        }
     }
 }
 
@@ -208,13 +215,20 @@ progress_path_bar_append (ProgressPathBar* self,
   g_return_if_fail (PROGRESS_IS_PATH_BAR (self));
 
   element = g_slice_new (ProgressPathBarElement);
+
   element->icon_name = g_strdup (icon);
-  element->icon = NULL;
+  element->icon      = NULL;
   if (element->icon_name)
     {
       element->icon = gtk_widget_render_icon (GTK_WIDGET (self), element->icon_name, GTK_ICON_SIZE_MENU, NULL);
     }
-  element->label     = g_strdup (label);
+
+  element->label  = g_strdup (label);
+  element->layout = NULL;
+  if (element->label)
+    {
+      element->layout = gtk_widget_create_pango_layout (GTK_WIDGET (self), element->label);
+    }
 
   PRIV (self)->elements = g_list_append (PRIV (self)->elements, element);
 }
