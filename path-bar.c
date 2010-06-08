@@ -22,7 +22,8 @@
 
 typedef struct _ProgressPathBarElement
 {
-  gchar* icon_name;
+  gchar    * icon_name;
+  GdkPixbuf* icon;
   gchar* label;
 } ProgressPathBarElement;
 
@@ -47,6 +48,10 @@ free_element (gpointer  data,
 {
   ProgressPathBarElement* element = data;
   g_free (element->icon_name);
+  if (element->icon)
+    {
+      g_object_unref (element->icon);
+    }
   g_free (element->label);
   g_slice_free (ProgressPathBarElement, element);
 }
@@ -91,18 +96,15 @@ expose_event (GtkWidget     * widget,
       cairo_translate (cr, 4.0, 0.0);
       intern += 4.0;
 
-      if (element->icon_name)
+      if (element->icon)
         {
-          /* FIXME: cache the pixbuf after realize() and update on every "style-set" */
-          GdkPixbuf* buf = gtk_widget_render_icon (widget, element->icon_name, GTK_ICON_SIZE_MENU, NULL);
           cairo_save (cr);
           cairo_translate (cr, 0.0, 4.0);
-          gdk_cairo_set_source_pixbuf (cr, buf, 0.0, 0.0);
+          gdk_cairo_set_source_pixbuf (cr, element->icon, 0.0, 0.0);
           cairo_paint (cr);
           cairo_restore (cr);
-          cairo_translate (cr, gdk_pixbuf_get_width (buf) + 4.0, 0.0);
-          intern += gdk_pixbuf_get_width (buf) + 4.0;
-          g_object_unref (buf);
+          cairo_translate (cr, gdk_pixbuf_get_width (element->icon) + 4.0, 0.0);
+          intern += gdk_pixbuf_get_width (element->icon) + 4.0;
         }
       if (element->label)
         {
@@ -160,6 +162,29 @@ expose_event (GtkWidget     * widget,
 }
 
 static void
+style_set (GtkWidget* widget,
+           GtkStyle * old_style)
+{
+  GList* iter;
+
+  if (GTK_WIDGET_CLASS (progress_path_bar_parent_class)->style_set)
+    {
+      GTK_WIDGET_CLASS (progress_path_bar_parent_class)->style_set (widget, old_style);
+    }
+
+  for (iter = PRIV (widget)->elements; iter; iter = iter->next)
+    {
+      ProgressPathBarElement* element = iter->data;
+
+      if (element->icon)
+        {
+          g_object_unref (element->icon);
+          element->icon = gtk_widget_render_icon (widget, element->icon_name, GTK_ICON_SIZE_MENU, NULL);
+        }
+    }
+}
+
+static void
 progress_path_bar_class_init (ProgressPathBarClass* self_class)
 {
   GObjectClass  * object_class = G_OBJECT_CLASS (self_class);
@@ -168,6 +193,7 @@ progress_path_bar_class_init (ProgressPathBarClass* self_class)
   object_class->finalize = finalize;
 
   widget_class->expose_event = expose_event;
+  widget_class->style_set    = style_set;
 
   g_type_class_add_private (self_class, sizeof (ProgressPathBarPrivate));
 }
@@ -183,6 +209,11 @@ progress_path_bar_append (ProgressPathBar* self,
 
   element = g_slice_new (ProgressPathBarElement);
   element->icon_name = g_strdup (icon);
+  element->icon = NULL;
+  if (element->icon_name)
+    {
+      element->icon = gtk_widget_render_icon (GTK_WIDGET (self), element->icon_name, GTK_ICON_SIZE_MENU, NULL);
+    }
   element->label     = g_strdup (label);
 
   PRIV (self)->elements = g_list_append (PRIV (self)->elements, element);
