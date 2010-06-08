@@ -18,31 +18,12 @@
  * USA
  */
 
-#include <gtk/gtk.h>
-#include <path-bar.h>
+#include "path-bar.h"
 
-int
-main (int   argc,
-      char**argv)
+GtkWidget*
+progress_path_bar_new (void)
 {
-  GtkWidget* window;
-  GtkWidget* path;
-
-  gtk_init (&argc, &argv);
-
-  window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  path   = progress_path_bar_new ();
-
-  gtk_window_set_default_size (GTK_WINDOW (window), 400, 300);
-  g_signal_connect (window, "destroy",
-                    G_CALLBACK (gtk_main_quit), NULL);
-
-  gtk_container_add (GTK_CONTAINER (window), path);
-
-  gtk_widget_show_all (window);
-  gtk_main ();
-
-  return 0;
+  return gtk_label_new ("path bar");
 }
 
 /* vim:set et sw=2 cino=t0,f0,(0,{s,>2s,n-1s,^-1s,e2s: */

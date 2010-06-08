@@ -1,4 +1,4 @@
 all: demo
 
-demo: main.c
-	gcc -o $@ $^ -g -O2 -Wall -Wextra $(shell pkg-config --cflags --libs gtk+-2.0)
+demo: main.c path-bar.c path-bar.h Makefile
+	gcc -o $@ $(filter %.c,$^) -g -O2 -Wall -Wextra -I. $(shell pkg-config --cflags --libs gtk+-2.0)
