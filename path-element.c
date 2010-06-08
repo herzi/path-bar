@@ -20,5 +20,21 @@
 
 #include "path-element.h"
 
+G_DEFINE_TYPE (ProgressPathElement, progress_path_element, PROGRESS_TYPE_SIMPLE_WIDGET);
+
+static void
+progress_path_element_init (ProgressPathElement* self G_GNUC_UNUSED)
+{}
+
+static void
+progress_path_element_class_init (ProgressPathElementClass* self_class G_GNUC_UNUSED)
+{}
+
+GtkWidget*
+progress_path_element_new (void)
+{
+  return g_object_new (PROGRESS_TYPE_PATH_ELEMENT,
+                       NULL);
+}
 
 /* vim:set et sw=2 cino=t0,f0,(0,{s,>2s,n-1s,^-1s,e2s: */

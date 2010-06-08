@@ -21,18 +21,32 @@
 #ifndef PATH_ELEMENT_H
 #define PATH_ELEMENT_H
 
-#include <gdk/gdk.h>
+#include <simple-widget.h>
 
 G_BEGIN_DECLS
 
 typedef struct _ProgressPathElement        ProgressPathElement;
+typedef struct _ProgressPathElementClass   ProgressPathElementClass;
+typedef struct _ProgressPathElementPrivate ProgressPathElementPrivate;
+
+#define PROGRESS_TYPE_PATH_ELEMENT         (progress_path_element_get_type ())
+
+GType      progress_path_element_get_type (void);
+GtkWidget* progress_path_element_new      (void);
 
 struct _ProgressPathElement
 {
+  ProgressSimpleWidget        base_instance;
   gchar      * icon_name;
   GdkPixbuf  * icon;
   gchar      * label;
   PangoLayout* layout;
+  ProgressPathElementPrivate* _private;
+};
+
+struct _ProgressPathElementClass
+{
+  ProgressSimpleWidgetClass   base_class;
 };
 
 G_END_DECLS
