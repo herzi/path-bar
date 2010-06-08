@@ -52,7 +52,7 @@ free_element (gpointer  data,
     {
       g_object_unref (element->layout);
     }
-  g_slice_free (ProgressPathElement, element);
+  g_object_unref (element);
 }
 
 static void
@@ -252,7 +252,8 @@ progress_path_bar_append (ProgressPathBar* self,
 
   g_return_if_fail (PROGRESS_IS_PATH_BAR (self));
 
-  element = g_slice_new (ProgressPathElement);
+  element = PROGRESS_PATH_ELEMENT (progress_path_element_new ());
+  g_object_ref_sink (element);
 
   element->icon_name = g_strdup (icon);
   element->icon      = NULL;

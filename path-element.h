@@ -30,6 +30,7 @@ typedef struct _ProgressPathElementClass   ProgressPathElementClass;
 typedef struct _ProgressPathElementPrivate ProgressPathElementPrivate;
 
 #define PROGRESS_TYPE_PATH_ELEMENT         (progress_path_element_get_type ())
+#define PROGRESS_PATH_ELEMENT(i)           (G_TYPE_CHECK_INSTANCE_CAST ((i), PROGRESS_TYPE_PATH_ELEMENT, ProgressPathElement))
 
 GType      progress_path_element_get_type (void);
 GtkWidget* progress_path_element_new      (void);
