@@ -71,6 +71,18 @@ expose_event (GtkWidget     * widget,
           cairo_arc (cr, 4.5, 4.5, 4.0, G_PI, 1.5 * G_PI);
         }
 
+      if (elements[i].icon_name)
+        {
+          /* FIXME: cache the pixbuf after realize() and update on every "style-set" */
+          GdkPixbuf* buf = gtk_widget_render_icon (widget, elements[i].icon_name, GTK_ICON_SIZE_MENU, NULL);
+          cairo_save (cr);
+          cairo_translate (cr, 4.0, 4.0);
+          gdk_cairo_set_source_pixbuf (cr, buf, 0.0, 0.0);
+          cairo_paint (cr);
+          cairo_restore (cr);
+          g_object_unref (buf);
+        }
+
       if (i >= G_N_ELEMENTS (elements) - 1)
         {
           cairo_arc (cr, widget->allocation.width - 4.5, 4.5, 4.0, 1.5 * G_PI, 2.0 * G_PI);
