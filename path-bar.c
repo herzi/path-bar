@@ -20,10 +20,24 @@
 
 #include "path-bar.h"
 
+G_DEFINE_TYPE (ProgressPathBar, progress_path_bar, GTK_TYPE_WIDGET);
+
+static void
+progress_path_bar_init (ProgressPathBar* self)
+{
+  gtk_widget_set_has_window (GTK_WIDGET (self), FALSE);
+}
+
+static void
+progress_path_bar_class_init (ProgressPathBarClass* self_class G_GNUC_UNUSED)
+{
+}
+
 GtkWidget*
 progress_path_bar_new (void)
 {
-  return gtk_label_new ("path bar");
+  return g_object_new (PROGRESS_TYPE_PATH_BAR,
+                       NULL);
 }
 
 /* vim:set et sw=2 cino=t0,f0,(0,{s,>2s,n-1s,^-1s,e2s: */

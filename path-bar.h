@@ -25,7 +25,25 @@
 
 G_BEGIN_DECLS
 
-GtkWidget* progress_path_bar_new (void);
+typedef struct _ProgressPathBar        ProgressPathBar;
+typedef struct _ProgressPathBarClass   ProgressPathBarClass;
+typedef struct _ProgressPathBarPrivate ProgressPathBarPrivate;
+
+#define PROGRESS_TYPE_PATH_BAR         (progress_path_bar_get_type ())
+
+GType      progress_path_bar_get_type (void);
+GtkWidget* progress_path_bar_new      (void);
+
+struct _ProgressPathBar
+{
+  GtkWidget               base_instance;
+  ProgressPathBarPrivate* _private;
+};
+
+struct _ProgressPathBarClass
+{
+  GtkWidgetClass          base_class;
+};
 
 G_END_DECLS
 
