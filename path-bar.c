@@ -59,14 +59,18 @@ expose_event (GtkWidget     * widget,
   cairo_arc (cr, 4.5, 4.5, 4.0, G_PI, 1.5 * G_PI);
   for (i = 0; i < G_N_ELEMENTS (elements); i++)
     {
+      double intern = 0.0;
       if (i > 0)
         {
+          cairo_new_path (cr);
           cairo_move_to (cr, 0.5, 24.5);
           cairo_line_to (cr, 12.5, 12.5);
           cairo_line_to (cr, 0.5, 0.5);
           cairo_translate (cr, 12.0, 0.0);
+          intern += 12.0;
         }
       cairo_translate (cr, 4.0, 0.0);
+      intern += 4.0;
 
       if (elements[i].icon_name)
         {
@@ -78,6 +82,7 @@ expose_event (GtkWidget     * widget,
           cairo_paint (cr);
           cairo_restore (cr);
           cairo_translate (cr, gdk_pixbuf_get_width (buf) + 4.0, 0.0);
+          intern += gdk_pixbuf_get_width (buf) + 4.0;
           g_object_unref (buf);
         }
       if (elements[i].label)
@@ -98,18 +103,27 @@ expose_event (GtkWidget     * widget,
           cairo_new_path (cr);
           cairo_append_path (cr, path);
           cairo_translate (cr, logical.width / PANGO_SCALE + 4.0, 0.0);
+          intern += logical.width / PANGO_SCALE + 4.0;
           cairo_path_destroy (path);
           g_object_unref (layout);
         }
 
       if (i < G_N_ELEMENTS (elements) - 1)
         {
-          /* FIXME: restore original coordinates */
+          cairo_pattern_t* pattern = cairo_pattern_create_linear (-intern, 0.0, 0.0, 24.0);
+          cairo_pattern_add_color_stop_rgba (pattern, 0.0, 0.0, 0.0, 0.0, 0.15);
+          cairo_pattern_add_color_stop_rgba (pattern, 1.0, 1.0, 1.0, 1.0, 0.15);
+
           cairo_line_to (cr, 0.5, 0.5);
           cairo_line_to (cr, 12.5, 12.5);
           cairo_line_to (cr, 0.5, 24.5);
-
           cairo_close_path (cr);
+
+          cairo_save (cr);
+          cairo_set_source (cr, pattern);
+          cairo_fill_preserve (cr);
+          cairo_pattern_destroy (pattern);
+          cairo_restore (cr);
 
           cairo_stroke (cr);
           cairo_translate (cr, 1.0, 0.0);
