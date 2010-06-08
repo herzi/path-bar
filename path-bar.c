@@ -42,8 +42,8 @@ expose_event (GtkWidget     * widget,
   elements[] =
     {
         {GTK_STOCK_HOME, NULL},
-#if 0
         {NULL, N_("Programming")},
+#if 0
         {NULL, N_("GTK+")},
         {NULL, N_("Path Bar")}
 #endif
@@ -54,22 +54,19 @@ expose_event (GtkWidget     * widget,
   gdk_cairo_region (cr, event->region);
   cairo_clip (cr);
 
-  cairo_save (cr);
   cairo_set_line_width (cr, 1.0);
   cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.5);
-  for (i = 0; i == 0 && i < G_N_ELEMENTS (elements); i++)
+  cairo_save (cr);
+  cairo_arc (cr, 4.5, 20.5, 4.0, 0.5 * G_PI, G_PI);
+  cairo_arc (cr, 4.5, 4.5, 4.0, G_PI, 1.5 * G_PI);
+  for (i = 0; i < G_N_ELEMENTS (elements); i++)
     {
       if (i > 0)
         {
-          cairo_move_to (cr, 0.0, 16.0);
-          cairo_line_to (cr, 8.0, 8.0);
-          cairo_line_to (cr, 0.0, 0.0);
-          cairo_translate (cr, 8.0, 0.0);
-        }
-      else
-        {
-          cairo_arc (cr, 4.5, 20.5, 4.0, 0.5 * G_PI, G_PI);
-          cairo_arc (cr, 4.5, 4.5, 4.0, G_PI, 1.5 * G_PI);
+          cairo_move_to (cr, 0.5, 24.5);
+          cairo_line_to (cr, 12.5, 12.5);
+          cairo_line_to (cr, 0.5, 0.5);
+          cairo_translate (cr, 12.0, 0.0);
         }
       cairo_translate (cr, 4.0, 0.0);
 
@@ -78,26 +75,53 @@ expose_event (GtkWidget     * widget,
           /* FIXME: cache the pixbuf after realize() and update on every "style-set" */
           GdkPixbuf* buf = gtk_widget_render_icon (widget, elements[i].icon_name, GTK_ICON_SIZE_MENU, NULL);
           cairo_save (cr);
-          cairo_translate (cr, 4.0, 4.0);
+          cairo_translate (cr, 0.0, 4.0);
           gdk_cairo_set_source_pixbuf (cr, buf, 0.0, 0.0);
           cairo_paint (cr);
           cairo_restore (cr);
           cairo_translate (cr, gdk_pixbuf_get_width (buf) + 4.0, 0.0);
           g_object_unref (buf);
         }
-
-      if (i >= G_N_ELEMENTS (elements) - 1)
+      if (elements[i].label)
         {
-          /* FIXME: restore original coordinates */
-          cairo_arc (cr, widget->allocation.width - 4.5, 4.5, 4.0, 1.5 * G_PI, 2.0 * G_PI);
-          cairo_arc (cr, widget->allocation.width - 4.5, 20.5, 4.0, 0.0, 0.5 * G_PI);
+          /* FIXME: cache the layout after realize() and update on every "style-set" */
+          PangoLayout* layout = gtk_widget_create_pango_layout (widget, elements[i].label);
+          PangoRectangle  logical;
+          cairo_path_t* path = cairo_copy_path (cr);
+
+          pango_layout_get_extents (layout, NULL, &logical);
+
+          cairo_save (cr);
+          cairo_new_path (cr);
+          cairo_translate (cr, 0.0, 18.0 - pango_layout_get_baseline (layout) / PANGO_SCALE); //20 - pango_layout_get_baseline (layout) + 0.5);
+          pango_cairo_show_layout (cr, layout);
+          cairo_restore (cr);
+
+          cairo_new_path (cr);
+          cairo_append_path (cr, path);
+          cairo_translate (cr, logical.width + 4.0, 0.0);
+          cairo_path_destroy (path);
+          g_object_unref (layout);
         }
 
-      cairo_close_path (cr);
+      if (i < G_N_ELEMENTS (elements) - 1)
+        {
+          /* FIXME: restore original coordinates */
+          cairo_line_to (cr, 0.5, 0.5);
+          cairo_line_to (cr, 12.5, 12.5);
+          cairo_line_to (cr, 0.5, 24.5);
 
-      cairo_stroke (cr);
+          cairo_close_path (cr);
+
+          cairo_stroke (cr);
+          cairo_translate (cr, 1.0, 0.0);
+        }
     }
   cairo_restore (cr);
+  cairo_arc (cr, widget->allocation.width - 4.5, 4.5, 4.0, 1.5 * G_PI, 2.0 * G_PI);
+  cairo_arc (cr, widget->allocation.width - 4.5, 20.5, 4.0, 0.0, 0.5 * G_PI);
+  cairo_close_path (cr);
+  cairo_stroke (cr);
 
   cairo_destroy (cr);
   return FALSE;
