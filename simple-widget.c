@@ -23,8 +23,10 @@
 G_DEFINE_TYPE (ProgressSimpleWidget, progress_simple_widget, GTK_TYPE_WIDGET);
 
 static void
-progress_simple_widget_init (ProgressSimpleWidget* self G_GNUC_UNUSED)
-{}
+progress_simple_widget_init (ProgressSimpleWidget* self)
+{
+  gtk_widget_set_has_window (GTK_WIDGET (self), FALSE);
+}
 
 static void
 progress_simple_widget_class_init (ProgressSimpleWidgetClass* self_class G_GNUC_UNUSED)
