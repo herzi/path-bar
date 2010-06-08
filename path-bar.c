@@ -43,10 +43,8 @@ expose_event (GtkWidget     * widget,
     {
         {GTK_STOCK_HOME, NULL},
         {NULL, N_("Programming")},
-#if 0
         {NULL, N_("GTK+")},
         {NULL, N_("Path Bar")}
-#endif
     };
   cairo_t* cr = gdk_cairo_create (event->window);
   guint i;
@@ -99,7 +97,7 @@ expose_event (GtkWidget     * widget,
 
           cairo_new_path (cr);
           cairo_append_path (cr, path);
-          cairo_translate (cr, logical.width + 4.0, 0.0);
+          cairo_translate (cr, logical.width / PANGO_SCALE + 4.0, 0.0);
           cairo_path_destroy (path);
           g_object_unref (layout);
         }
