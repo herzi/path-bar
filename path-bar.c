@@ -29,7 +29,7 @@ struct _ProgressPathBarPrivate
 
 #define PRIV(i) (((ProgressPathBar*)(i))->_private)
 
-G_DEFINE_TYPE (ProgressPathBar, progress_path_bar, PROGRESS_TYPE_SIMPLE_WIDGET);
+G_DEFINE_TYPE (ProgressPathBar, progress_path_bar, PROGRESS_TYPE_SIMPLE_CONTAINER);
 
 static void
 progress_path_bar_init (ProgressPathBar* self G_GNUC_UNUSED)

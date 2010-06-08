@@ -42,13 +42,13 @@ void       progress_path_bar_append   (ProgressPathBar* self,
 
 struct _ProgressPathBar
 {
-  ProgressSimpleWidget       base_instance;
-  ProgressPathBarPrivate   * _private;
+  ProgressSimpleContainer       base_instance;
+  ProgressPathBarPrivate      * _private;
 };
 
 struct _ProgressPathBarClass
 {
-  ProgressSimpleWidgetClass  base_class;
+  ProgressSimpleContainerClass  base_class;
 };
 
 G_END_DECLS

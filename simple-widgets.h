@@ -29,9 +29,17 @@ typedef struct _ProgressSimpleWidget        ProgressSimpleWidget;
 typedef struct _ProgressSimpleWidgetClass   ProgressSimpleWidgetClass;
 typedef struct _ProgressSimpleWidgetPrivate ProgressSimpleWidgetPrivate;
 
+typedef struct _ProgressSimpleContainer        ProgressSimpleContainer;
+typedef struct _ProgressSimpleContainerClass   ProgressSimpleContainerClass;
+typedef struct _ProgressSimpleContainerPrivate ProgressSimpleContainerPrivate;
+
 #define PROGRESS_TYPE_SIMPLE_WIDGET         (progress_simple_widget_get_type ())
 
+#define PROGRESS_TYPE_SIMPLE_CONTAINER      (progress_simple_container_get_type ())
+
 GType  progress_simple_widget_get_type (void);
+
+GType  progress_simple_container_get_type (void);
 
 struct _ProgressSimpleWidget
 {
@@ -42,6 +50,17 @@ struct _ProgressSimpleWidget
 struct _ProgressSimpleWidgetClass
 {
   GtkWidgetClass               base_class;
+};
+
+struct _ProgressSimpleContainer
+{
+  GtkContainer                    base_instance;
+  ProgressSimpleContainerPrivate* _private;
+};
+
+struct _ProgressSimpleContainerClass
+{
+  GtkContainerClass               base_class;
 };
 
 G_END_DECLS

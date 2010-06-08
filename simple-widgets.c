@@ -32,4 +32,16 @@ static void
 progress_simple_widget_class_init (ProgressSimpleWidgetClass* self_class G_GNUC_UNUSED)
 {}
 
+G_DEFINE_TYPE (ProgressSimpleContainer, progress_simple_container, GTK_TYPE_CONTAINER);
+
+static void
+progress_simple_container_init (ProgressSimpleContainer* self)
+{
+  gtk_widget_set_has_window (GTK_WIDGET (self), FALSE);
+}
+
+static void
+progress_simple_container_class_init (ProgressSimpleContainerClass* self_class G_GNUC_UNUSED)
+{}
+
 /* vim:set et sw=2 cino=t0,f0,(0,{s,>2s,n-1s,^-1s,e2s: */
