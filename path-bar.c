@@ -80,6 +80,11 @@ expose_event (GtkWidget     * widget,
   gdk_cairo_region (cr, event->region);
   cairo_clip (cr);
 
+  /* FIXME: respect allocation.x */
+  /* FIXME: respect alloaction.y */
+  /* FIXME: respect allocation.height */
+  /* FIXME: respect allocation.width */
+
   cairo_set_line_width (cr, 1.0);
   cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.5);
   cairo_save (cr);
@@ -168,21 +173,35 @@ size_request (GtkWidget     * widget,
               GtkRequisition* req)
 {
   GList* iter;
+  int    req_width = 0;
+
+  /* FIXME: turn the padding into a #define'd contant, later into a style property */
+
   for (iter = PRIV (widget)->elements; iter; iter = iter->next)
     {
       ProgressPathBarElement* element = iter->data;
 
+      if (iter->prev)
+        {
+          req_width += 12;
+        }
+      req_width += 4;
+
       if (element->icon)
         {
           req->height = MAX (req->height, 2 * 4 + gdk_pixbuf_get_height (element->icon));
+          req_width += gdk_pixbuf_get_width (element->icon) + 4;
         }
       if (element->layout)
         {
           PangoRectangle  rectangle;
           pango_layout_get_extents (element->layout, NULL, &rectangle);
           req->height = MAX (req->height, 2 * 4 + rectangle.height / PANGO_SCALE);
+          req_width += PANGO_PIXELS_CEIL (rectangle.width) + 4;
         }
     }
+
+  req->width = MAX (req->width, req_width);
 
   GTK_WIDGET_CLASS (progress_path_bar_parent_class)->size_request (widget, req);
 }
