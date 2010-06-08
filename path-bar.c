@@ -20,13 +20,7 @@
 
 #include "path-bar.h"
 
-typedef struct _ProgressPathBarElement
-{
-  gchar      * icon_name;
-  GdkPixbuf  * icon;
-  gchar      * label;
-  PangoLayout* layout;
-} ProgressPathBarElement;
+#include "path-element.h"
 
 struct _ProgressPathBarPrivate
 {
@@ -47,7 +41,7 @@ static void
 free_element (gpointer  data,
               gpointer  user_data G_GNUC_UNUSED)
 {
-  ProgressPathBarElement* element = data;
+  ProgressPathElement* element = data;
   g_free (element->icon_name);
   if (element->icon)
     {
@@ -58,7 +52,7 @@ free_element (gpointer  data,
     {
       g_object_unref (element->layout);
     }
-  g_slice_free (ProgressPathBarElement, element);
+  g_slice_free (ProgressPathElement, element);
 }
 
 static void
@@ -92,7 +86,7 @@ expose_event (GtkWidget     * widget,
   cairo_arc (cr, 4.5, 4.5, 4.0, G_PI, 1.5 * G_PI);
   for (iter = PRIV (widget)->elements; iter; iter = iter->next)
     {
-      ProgressPathBarElement* element = iter->data;
+      ProgressPathElement* element = iter->data;
       double intern = 0.0;
       if (iter->prev)
         {
@@ -179,7 +173,7 @@ size_request (GtkWidget     * widget,
 
   for (iter = PRIV (widget)->elements; iter; iter = iter->next)
     {
-      ProgressPathBarElement* element = iter->data;
+      ProgressPathElement* element = iter->data;
 
       if (iter->prev)
         {
@@ -219,7 +213,7 @@ style_set (GtkWidget* widget,
 
   for (iter = PRIV (widget)->elements; iter; iter = iter->next)
     {
-      ProgressPathBarElement* element = iter->data;
+      ProgressPathElement* element = iter->data;
 
       if (element->icon)
         {
@@ -254,11 +248,11 @@ progress_path_bar_append (ProgressPathBar* self,
                           gchar const    * icon,
                           gchar const    * label)
 {
-  ProgressPathBarElement* element;
+  ProgressPathElement* element;
 
   g_return_if_fail (PROGRESS_IS_PATH_BAR (self));
 
-  element = g_slice_new (ProgressPathBarElement);
+  element = g_slice_new (ProgressPathElement);
 
   element->icon_name = g_strdup (icon);
   element->icon      = NULL;
