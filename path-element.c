@@ -27,8 +27,31 @@ progress_path_element_init (ProgressPathElement* self G_GNUC_UNUSED)
 {}
 
 static void
-progress_path_element_class_init (ProgressPathElementClass* self_class G_GNUC_UNUSED)
-{}
+finalize (GObject* object)
+{
+  ProgressPathElement* element = PROGRESS_PATH_ELEMENT (object);
+
+  g_free (element->icon_name);
+  if (element->icon)
+    {
+      g_object_unref (element->icon);
+    }
+  g_free (element->label);
+  if (element->layout)
+    {
+      g_object_unref (element->layout);
+    }
+
+  G_OBJECT_CLASS (progress_path_element_parent_class)->finalize (object);
+}
+
+static void
+progress_path_element_class_init (ProgressPathElementClass* self_class)
+{
+  GObjectClass* object_class = G_OBJECT_CLASS (self_class);
+
+  object_class->finalize = finalize;
+}
 
 GtkWidget*
 progress_path_element_new (void)

@@ -38,27 +38,9 @@ progress_path_bar_init (ProgressPathBar* self G_GNUC_UNUSED)
 }
 
 static void
-free_element (gpointer  data,
-              gpointer  user_data G_GNUC_UNUSED)
-{
-  ProgressPathElement* element = data;
-  g_free (element->icon_name);
-  if (element->icon)
-    {
-      g_object_unref (element->icon);
-    }
-  g_free (element->label);
-  if (element->layout)
-    {
-      g_object_unref (element->layout);
-    }
-  g_object_unref (element);
-}
-
-static void
 finalize (GObject* object)
 {
-  g_list_foreach (PRIV (object)->elements, free_element, NULL);
+  g_list_foreach (PRIV (object)->elements, (GFunc)g_object_unref, NULL);
   g_list_free (PRIV (object)->elements);
 
   G_OBJECT_CLASS (progress_path_bar_parent_class)->finalize (object);
