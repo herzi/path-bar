@@ -67,7 +67,9 @@ expose_event (GtkWidget     * widget,
   for (iter = children; iter; iter = iter->next)
     {
       ProgressPathElement* element = iter->data;
-      double intern = 0.0;
+      cairo_pattern_t    * pattern;
+      double               intern = 0.0;
+
       if (iter->prev)
         {
           cairo_new_path (cr);
@@ -87,33 +89,33 @@ expose_event (GtkWidget     * widget,
 
       intern += GTK_WIDGET (element)->allocation.width + 4.0;
 
+      pattern = cairo_pattern_create_linear (x, 0.0, x + intern, 24.0);
+      cairo_pattern_add_color_stop_rgba (pattern, 0.0, 0.0, 0.0, 0.0, 0.15);
+      cairo_pattern_add_color_stop_rgba (pattern, 1.0, 1.0, 1.0, 1.0, 0.15);
+
       if (iter->next)
         {
-          cairo_pattern_t* pattern = cairo_pattern_create_linear (-intern, 0.0, 0.0, 24.0);
-          cairo_pattern_add_color_stop_rgba (pattern, 0.0, 0.0, 0.0, 0.0, 0.15);
-          cairo_pattern_add_color_stop_rgba (pattern, 1.0, 1.0, 1.0, 1.0, 0.15);
-
           cairo_line_to (cr, x + intern + 0.5, 0.5);
           cairo_line_to (cr, x + intern + 12.5, 12.0);
           cairo_line_to (cr, x + intern + 0.5, 23.5);
-          cairo_close_path (cr);
 
-          cairo_save (cr);
-          cairo_set_source (cr, pattern);
-          //cairo_fill_preserve (cr);
-          cairo_pattern_destroy (pattern);
-          cairo_restore (cr);
-
-          cairo_stroke (cr);
           x += intern + 1;
         }
       else
         {
           cairo_arc (cr, widget->allocation.width - 4.5, 4.5, 4.0, 1.5 * G_PI, 2.0 * G_PI);
           cairo_arc (cr, widget->allocation.width - 4.5, 19.5, 4.0, 0.0, 0.5 * G_PI);
-          cairo_close_path (cr);
-          cairo_stroke (cr);
         }
+
+      cairo_close_path (cr);
+
+      cairo_save (cr);
+      cairo_set_source (cr, pattern);
+      cairo_fill_preserve (cr);
+      cairo_pattern_destroy (pattern);
+      cairo_restore (cr);
+
+      cairo_stroke (cr);
     }
   g_list_free (children);
 
