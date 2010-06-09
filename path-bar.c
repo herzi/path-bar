@@ -149,17 +149,7 @@ size_allocate (GtkWidget    * widget,
           child_allocation.x += 12;
         }
 
-      if (element->icon)
-        {
-          child_allocation.width += gdk_pixbuf_get_width (element->icon);
-        }
-
-      if (element->layout)
-        {
-          PangoRectangle  logical;
-          pango_layout_get_extents (element->layout, NULL, &logical);
-          child_allocation.width += PANGO_PIXELS_CEIL (logical.width) + (has_icon ? 4 : 0);
-        }
+      child_allocation.width = GTK_WIDGET (element)->requisition.width;
 
       gtk_widget_size_allocate (iter->data, &child_allocation);
 
@@ -181,6 +171,9 @@ size_request (GtkWidget     * widget,
   children = gtk_container_get_children (GTK_CONTAINER (widget));
   for (iter = children; iter; iter = iter->next)
     {
+      GtkRequisition  child_requisition;
+
+      gtk_widget_size_request (iter->data, &child_requisition);
       ProgressPathElement* element = iter->data;
 
       if (iter->prev)
@@ -189,59 +182,19 @@ size_request (GtkWidget     * widget,
         }
       req_width += 4;
 
-      if (element->icon)
-        {
-          req->height = MAX (req->height, 2 * 4 + gdk_pixbuf_get_height (element->icon));
-          req_width += gdk_pixbuf_get_width (element->icon) + 4;
-        }
-      if (element->layout)
-        {
-          PangoRectangle  rectangle;
-          pango_layout_get_extents (element->layout, NULL, &rectangle);
-          req->height = MAX (req->height, 2 * 4 + rectangle.height / PANGO_SCALE);
-          req_width += PANGO_PIXELS_CEIL (rectangle.width) + 4;
-        }
+      req_width += child_requisition.width;
+
       if (iter->next)
         {
           req_width += 1;
         }
+      req->height = MAX (req->height, 2 * 4 + child_requisition.height);
     }
   g_list_free (children);
 
   req->width = MAX (req->width, req_width);
 
   GTK_WIDGET_CLASS (progress_path_bar_parent_class)->size_request (widget, req);
-}
-
-static void
-style_set (GtkWidget* widget,
-           GtkStyle * old_style)
-{
-  GList* children;
-  GList* iter;
-
-  if (GTK_WIDGET_CLASS (progress_path_bar_parent_class)->style_set)
-    {
-      GTK_WIDGET_CLASS (progress_path_bar_parent_class)->style_set (widget, old_style);
-    }
-
-  children = gtk_container_get_children (GTK_CONTAINER (widget));
-  for (iter = children; iter; iter = iter->next)
-    {
-      ProgressPathElement* element = iter->data;
-
-      if (element->icon)
-        {
-          g_object_unref (element->icon);
-          element->icon = gtk_widget_render_icon (widget, element->icon_name, GTK_ICON_SIZE_MENU, NULL);
-        }
-      if (element->layout)
-        {
-          g_object_unref (element->layout);
-          element->layout = gtk_widget_create_pango_layout (widget, element->label);
-        }
-    }
-  g_list_free (children);
 }
 
 static void
@@ -255,7 +208,6 @@ progress_path_bar_class_init (ProgressPathBarClass* self_class)
   widget_class->expose_event  = expose_event;
   widget_class->size_allocate = size_allocate;
   widget_class->size_request  = size_request;
-  widget_class->style_set     = style_set;
 
   g_type_class_add_private (self_class, sizeof (ProgressPathBarPrivate));
 }
@@ -269,22 +221,8 @@ progress_path_bar_append (ProgressPathBar* self,
 
   g_return_if_fail (PROGRESS_IS_PATH_BAR (self));
 
-  element = PROGRESS_PATH_ELEMENT (progress_path_element_new ());
+  element = PROGRESS_PATH_ELEMENT (progress_path_element_new (icon, label));
   gtk_container_add (GTK_CONTAINER (self), GTK_WIDGET (element));
-
-  element->icon_name = g_strdup (icon);
-  element->icon      = NULL;
-  if (element->icon_name)
-    {
-      element->icon = gtk_widget_render_icon (GTK_WIDGET (self), element->icon_name, GTK_ICON_SIZE_MENU, NULL);
-    }
-
-  element->label  = g_strdup (label);
-  element->layout = NULL;
-  if (element->label)
-    {
-      element->layout = gtk_widget_create_pango_layout (GTK_WIDGET (self), element->label);
-    }
 }
 
 GtkWidget*

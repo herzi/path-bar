@@ -52,6 +52,47 @@ test_container_type (gpointer  data)
 }
 
 static void
+test_container_add (gpointer  data)
+{
+  GType      type = GPOINTER_TO_SIZE (data);
+  GtkWidget* window = gtk_test_create_widget (GTK_TYPE_WINDOW, NULL);
+  GtkWidget* container = gtk_test_create_widget (type, NULL);
+  int i;
+
+  for (i = 0; i < 5; i++)
+    {
+      gchar    * text = g_strdup_printf ("%d", 1 + i);
+      GtkWidget* child = gtk_label_new (text);
+
+      gtk_container_add (GTK_CONTAINER (container), child);
+    }
+
+  gtk_container_add (GTK_CONTAINER (window), container);
+  gtk_widget_show (window);
+}
+
+static void
+test_container_remove (gpointer  data)
+{
+  GType      type = GPOINTER_TO_SIZE (data);
+  GtkWidget* window = gtk_test_create_widget (GTK_TYPE_WINDOW, NULL);
+  GtkWidget* container = gtk_test_create_widget (type, NULL);
+  int i;
+
+  for (i = 0; i < 5; i++)
+    {
+      gchar    * text = g_strdup_printf ("%d", 1 + i);
+      GtkWidget* child = gtk_label_new (text);
+
+      gtk_container_add (GTK_CONTAINER (container), child);
+    }
+
+  gtk_container_add (GTK_CONTAINER (window), container);
+
+  ;
+}
+
+static void
 add_gtk_container_tests_for_type (GType  type)
 {
   gchar const* name = g_type_name (type);
@@ -59,6 +100,14 @@ add_gtk_container_tests_for_type (GType  type)
 
   g_string_append_printf (path, "/%s/<<GtkContainer>>/GType", name);
   g_test_add_data_func (path->str, GSIZE_TO_POINTER (type), (void (*) ())test_container_type);
+  g_string_set_size (path, 0);
+
+  g_string_append_printf (path, "/%s/<<GtkContainer>>/add", name);
+  g_test_add_data_func (path->str, GSIZE_TO_POINTER (type), (void (*) ())test_container_add);
+  g_string_set_size (path, 0);
+
+  g_string_append_printf (path, "/%s/<<GtkContainer>>/remove", name);
+  g_test_add_data_func (path->str, GSIZE_TO_POINTER (type), (void (*) ())test_container_remove);
 
   g_string_free (path, TRUE);
 }

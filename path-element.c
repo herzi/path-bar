@@ -82,6 +82,52 @@ expose_event (GtkWidget     * widget,
 }
 
 static void
+style_set (GtkWidget* widget,
+           GtkStyle * old_style)
+{
+  if (PRIV (widget)->icon)
+    {
+      g_object_unref (PRIV (widget)->icon);
+      PRIV (widget)->icon = gtk_widget_render_icon (widget, PRIV (widget)->icon_name, GTK_ICON_SIZE_MENU, NULL);
+    }
+  if (PRIV (widget)->layout)
+    {
+      g_object_unref (PRIV (widget)->layout);
+      PRIV (widget)->layout = gtk_widget_create_pango_layout (widget, PRIV (widget)->label);
+    }
+
+  g_print ("%p\n", GTK_WIDGET_CLASS (progress_path_element_parent_class)->style_set);
+  if (GTK_WIDGET_CLASS (progress_path_element_parent_class)->style_set)
+    {
+      GTK_WIDGET_CLASS (progress_path_element_parent_class)->style_set (widget, old_style);
+    }
+}
+
+static void
+size_request (GtkWidget     * widget,
+              GtkRequisition* requisition)
+{
+  int req_width = 0;
+
+  if (PRIV (widget)->icon)
+    {
+      requisition->height = MAX (requisition->height, gdk_pixbuf_get_height (PRIV (widget)->icon));
+      req_width += gdk_pixbuf_get_width (PRIV (widget)->icon) + 4;
+    }
+  if (PRIV (widget)->layout)
+    {
+      PangoRectangle  rectangle;
+      pango_layout_get_extents (PRIV (widget)->layout, NULL, &rectangle);
+      req_width += PANGO_PIXELS_CEIL (rectangle.width) + 4;
+      requisition->height = MAX (requisition->height, PANGO_PIXELS_CEIL (rectangle.height));
+    }
+
+  requisition->width = MAX (requisition->width, req_width);
+
+  GTK_WIDGET_CLASS (progress_path_element_parent_class)->size_request (widget, requisition);
+}
+
+static void
 progress_path_element_class_init (ProgressPathElementClass* self_class)
 {
   GObjectClass  * object_class = G_OBJECT_CLASS (self_class);
@@ -90,13 +136,33 @@ progress_path_element_class_init (ProgressPathElementClass* self_class)
   object_class->finalize = finalize;
 
   widget_class->expose_event = expose_event;
+  widget_class->size_request = size_request;
+  widget_class->style_set    = style_set;
 }
 
 GtkWidget*
-progress_path_element_new (void)
+progress_path_element_new (gchar const* icon,
+                           gchar const* label)
 {
-  return g_object_new (PROGRESS_TYPE_PATH_ELEMENT,
-                       NULL);
+  GtkWidget* result = g_object_new (PROGRESS_TYPE_PATH_ELEMENT,
+                                    NULL);
+  ProgressPathElement* element = PRIV (result);
+
+  element->icon_name = g_strdup (icon);
+  element->icon      = NULL;
+  if (element->icon_name)
+    {
+      element->icon = gtk_widget_render_icon (result, element->icon_name, GTK_ICON_SIZE_MENU, NULL);
+    }
+
+  element->label  = g_strdup (label);
+  element->layout = NULL;
+  if (element->label)
+    {
+      element->layout = gtk_widget_create_pango_layout (result, element->label);
+    }
+
+  return result;
 }
 
 /* vim:set et sw=2 cino=t0,f0,(0,{s,>2s,n-1s,^-1s,e2s: */
