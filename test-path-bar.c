@@ -128,6 +128,23 @@ add_gtk_container_tests_for_type (GType  type)
   g_string_free (path, TRUE);
 }
 
+static gboolean
+test_bar_life_cycle_idle (gpointer  user_data)
+{
+  gtk_widget_destroy (user_data);
+  gtk_main_quit ();
+  return FALSE;
+}
+
+static gboolean
+test_bar_life_cycle_cb (GtkWidget     * widget    G_GNUC_UNUSED,
+                        GdkEventExpose* event     G_GNUC_UNUSED,
+                        gpointer        user_data)
+{
+  g_idle_add (test_bar_life_cycle_idle, user_data);
+  return FALSE;
+}
+
 static void
 test_bar_life_cycle (void)
 {
@@ -138,7 +155,11 @@ test_bar_life_cycle (void)
 
   gtk_container_add (GTK_CONTAINER (window), bar);
 
+  g_signal_connect (bar, "expose-event",
+                    G_CALLBACK (test_bar_life_cycle_cb), window);
   gtk_widget_show_all (window);
+
+  gtk_main ();
 }
 
 static void

@@ -96,11 +96,7 @@ style_set (GtkWidget* widget,
       PRIV (widget)->layout = gtk_widget_create_pango_layout (widget, PRIV (widget)->label);
     }
 
-  g_print ("%p\n", GTK_WIDGET_CLASS (progress_path_element_parent_class)->style_set);
-  if (GTK_WIDGET_CLASS (progress_path_element_parent_class)->style_set)
-    {
-      GTK_WIDGET_CLASS (progress_path_element_parent_class)->style_set (widget, old_style);
-    }
+  GTK_WIDGET_CLASS (progress_path_element_parent_class)->style_set (widget, old_style);
 }
 
 static void
