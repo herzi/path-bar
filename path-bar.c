@@ -62,7 +62,7 @@ expose_event (GtkWidget     * widget,
 
   cairo_set_line_width (cr, 1.0);
   cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.5);
-  cairo_save (cr);
+
   children = gtk_container_get_children (GTK_CONTAINER (widget));
   for (iter = children; iter; iter = iter->next)
     {
@@ -107,14 +107,15 @@ expose_event (GtkWidget     * widget,
           cairo_stroke (cr);
           x += intern + 1;
         }
+      else
+        {
+          cairo_arc (cr, widget->allocation.width - 4.5, 4.5, 4.0, 1.5 * G_PI, 2.0 * G_PI);
+          cairo_arc (cr, widget->allocation.width - 4.5, 19.5, 4.0, 0.0, 0.5 * G_PI);
+          cairo_close_path (cr);
+          cairo_stroke (cr);
+        }
     }
   g_list_free (children);
-
-  cairo_restore (cr);
-  cairo_arc (cr, widget->allocation.width - 4.5, 4.5, 4.0, 1.5 * G_PI, 2.0 * G_PI);
-  cairo_arc (cr, widget->allocation.width - 4.5, 19.5, 4.0, 0.0, 0.5 * G_PI);
-  cairo_close_path (cr);
-  cairo_stroke (cr);
 
   cairo_destroy (cr);
 
