@@ -83,20 +83,8 @@ expose_event (GtkWidget     * widget,
 
       gtk_container_propagate_expose (GTK_CONTAINER (widget), GTK_WIDGET (element), event);
 
-      if (element->icon)
-        {
-          cairo_translate (cr, gdk_pixbuf_get_width (element->icon) + 4.0, 0.0);
-          intern += gdk_pixbuf_get_width (element->icon) + 4.0;
-        }
-      if (element->layout)
-        {
-          PangoRectangle  logical;
-
-          pango_layout_get_extents (element->layout, NULL, &logical);
-
-          cairo_translate (cr, logical.width / PANGO_SCALE + 4.0, 0.0);
-          intern += logical.width / PANGO_SCALE + 4.0;
-        }
+      cairo_translate (cr, GTK_WIDGET (element)->allocation.width + 4.0, 0.0);
+      intern += GTK_WIDGET (element)->allocation.width + 4.0;
 
       if (iter->next)
         {
