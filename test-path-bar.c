@@ -32,6 +32,18 @@ test_widget_type (gpointer  data)
 }
 
 static void
+test_widget_life_cycle (gpointer  data)
+{
+  GType      type = GPOINTER_TO_SIZE (data);
+  GtkWidget* window = gtk_test_create_widget (GTK_TYPE_WINDOW, NULL);
+  GtkWidget* widget = gtk_test_create_widget (type, NULL);
+
+  gtk_container_add (GTK_CONTAINER (window), widget);
+
+  gtk_widget_show_all (window);
+}
+
+static void
 add_gtk_widget_tests_for_type (GType  type)
 {
   gchar const* name = g_type_name (type);
@@ -39,6 +51,10 @@ add_gtk_widget_tests_for_type (GType  type)
 
   g_string_append_printf (path, "/%s/<<GtkWidget>>/GType", name);
   g_test_add_data_func (path->str, GSIZE_TO_POINTER (type), (void (*) ())test_widget_type);
+  g_string_set_size (path, 0);
+
+  g_string_append_printf (path, "/%s/<<GtkWidget>>/life-cycle", name);
+  g_test_add_data_func (path->str, GSIZE_TO_POINTER (type), (void (*) ())test_widget_life_cycle);
 
   g_string_free (path, TRUE);
 }
@@ -112,6 +128,27 @@ add_gtk_container_tests_for_type (GType  type)
   g_string_free (path, TRUE);
 }
 
+static void
+test_bar_life_cycle (void)
+{
+  GtkWidget* window = gtk_test_create_widget (GTK_TYPE_WINDOW, NULL);
+  GtkWidget* bar    = progress_path_bar_new ();
+
+  progress_path_bar_append (PROGRESS_PATH_BAR (bar), GTK_STOCK_INFO, "Information");
+
+  gtk_container_add (GTK_CONTAINER (window), bar);
+
+  gtk_widget_show_all (window);
+}
+
+static void
+add_tests_for_path_bar (void)
+{
+  add_gtk_widget_tests_for_type (PROGRESS_TYPE_PATH_BAR);
+  add_gtk_container_tests_for_type (PROGRESS_TYPE_PATH_BAR);
+  g_test_add_func ("/ProgressPathBar/life-cycle", test_bar_life_cycle);
+}
+
 int
 main (int   argc,
       char**argv)
@@ -121,9 +158,8 @@ main (int   argc,
   add_gtk_widget_tests_for_type (PROGRESS_TYPE_SIMPLE_WIDGET);
   add_gtk_widget_tests_for_type (PROGRESS_TYPE_SIMPLE_CONTAINER);
   add_gtk_container_tests_for_type (PROGRESS_TYPE_SIMPLE_CONTAINER);
-  add_gtk_widget_tests_for_type (PROGRESS_TYPE_PATH_BAR);
-  add_gtk_container_tests_for_type (PROGRESS_TYPE_PATH_BAR);
   add_gtk_widget_tests_for_type (PROGRESS_TYPE_PATH_ELEMENT);
+  add_tests_for_path_bar ();
 
   return g_test_run ();
 }
