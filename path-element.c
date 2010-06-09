@@ -45,12 +45,28 @@ finalize (GObject* object)
   G_OBJECT_CLASS (progress_path_element_parent_class)->finalize (object);
 }
 
+static gboolean
+expose_event (GtkWidget     * widget,
+              GdkEventExpose* event  G_GNUC_UNUSED)
+{
+  cairo_t* cr = gdk_cairo_create (widget->window);
+  gdk_cairo_region (cr, event->region);
+  cairo_clip (cr);
+  cairo_set_source_rgba (cr, 0.5, 1.0, 0.0, 0.25);
+  cairo_paint (cr);
+  cairo_destroy (cr);
+  return FALSE;
+}
+
 static void
 progress_path_element_class_init (ProgressPathElementClass* self_class)
 {
-  GObjectClass* object_class = G_OBJECT_CLASS (self_class);
+  GObjectClass  * object_class = G_OBJECT_CLASS (self_class);
+  GtkWidgetClass* widget_class = GTK_WIDGET_CLASS (self_class);
 
   object_class->finalize = finalize;
+
+  widget_class->expose_event = expose_event;
 }
 
 GtkWidget*

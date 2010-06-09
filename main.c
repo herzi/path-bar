@@ -23,13 +23,52 @@
 
 #include <glib/gi18n.h>
 
+#include <execinfo.h> /* backtrace() */
+#include <stdlib.h>   /* free() */
+
+static void
+my_logger (gchar const   * domain,
+           GLogLevelFlags  flags,
+           gchar const   * message,
+           gpointer        user_data)
+{
+  gchar const* skip[] = {G_STRFUNC, "g_logv", "g_log"};
+  GLogFunc* logger = user_data;
+  GString * new_message = g_string_new (message);
+  gpointer  buffer[100];
+  char    **strings;
+  int       i;
+  int       limit;
+
+  limit = backtrace (buffer, G_N_ELEMENTS (buffer));
+  strings = backtrace_symbols (buffer, limit);
+
+  g_string_append_printf (new_message, "\nBacktrace:");
+  for (i = G_N_ELEMENTS (skip); i < limit; i++)
+    {
+      g_string_append_printf (new_message, "\n    %s", strings[i]);
+    }
+  free (strings);
+
+  (*logger) (domain, flags, new_message->str, NULL);
+
+  g_string_free (new_message, TRUE);
+}
+
 int
 main (int   argc,
       char**argv)
 {
+  GLogFunc   logger = NULL;
   GtkWidget* window;
   GtkWidget* box;
   GtkWidget* path;
+
+  logger = g_log_set_default_handler (my_logger, &logger);
+  if (G_UNLIKELY (!logger))
+    {
+      logger = g_log_default_handler;
+    }
 
   gtk_init (&argc, &argv);
 
