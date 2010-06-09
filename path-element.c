@@ -20,6 +20,8 @@
 
 #include "path-element.h"
 
+#define PRIV(i) ((ProgressPathElement*)(i))
+
 G_DEFINE_TYPE (ProgressPathElement, progress_path_element, PROGRESS_TYPE_SIMPLE_WIDGET);
 
 static void
@@ -52,8 +54,18 @@ expose_event (GtkWidget     * widget,
   cairo_t* cr = gdk_cairo_create (widget->window);
   gdk_cairo_region (cr, event->region);
   cairo_clip (cr);
-  cairo_set_source_rgba (cr, 0.5, 1.0, 0.0, 0.25);
-  cairo_paint (cr);
+
+  cairo_translate (cr, widget->allocation.x, widget->allocation.y);
+
+  if (PRIV (widget)->icon)
+    {
+      gdk_cairo_set_source_pixbuf (cr, PRIV (widget)->icon, 0.0, 0.0);
+      cairo_rectangle (cr, 0.0, 0.0,
+                       gdk_pixbuf_get_width (PRIV (widget)->icon),
+                       gdk_pixbuf_get_height (PRIV (widget)->icon));
+      cairo_fill (cr);
+    }
+
   cairo_destroy (cr);
   return FALSE;
 }

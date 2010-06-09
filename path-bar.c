@@ -85,14 +85,6 @@ expose_event (GtkWidget     * widget,
 
       if (element->icon)
         {
-          cairo_save (cr);
-          cairo_translate (cr, 0.0, 4.0);
-          gdk_cairo_set_source_pixbuf (cr, element->icon, 0.0, 0.0);
-          cairo_rectangle (cr, 0.0, 0.0,
-                           gdk_pixbuf_get_width (element->icon),
-                           gdk_pixbuf_get_height (element->icon));
-          cairo_fill (cr);
-          cairo_restore (cr);
           cairo_translate (cr, gdk_pixbuf_get_width (element->icon) + 4.0, 0.0);
           intern += gdk_pixbuf_get_width (element->icon) + 4.0;
         }
