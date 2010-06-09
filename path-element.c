@@ -27,6 +27,7 @@ G_DEFINE_TYPE (ProgressPathElement, progress_path_element, PROGRESS_TYPE_SIMPLE_
 static void
 progress_path_element_init (ProgressPathElement* self)
 {
+  gtk_widget_add_events (GTK_WIDGET (self), GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   progress_simple_widget_set_use_input_window (PROGRESS_SIMPLE_WIDGET (self), TRUE);
 }
 
@@ -75,7 +76,14 @@ expose_event (GtkWidget     * widget,
       pango_layout_get_extents (PRIV (widget)->layout, NULL, &logical);
 
       cairo_translate (cr, 0.0, widget->allocation.height / 2 - PANGO_PIXELS (logical.height) / 2);
-      cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.75);
+      if (gtk_widget_get_state (widget) == GTK_STATE_PRELIGHT)
+        {
+          cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
+        }
+      else
+        {
+          cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.75);
+        }
       pango_cairo_show_layout (cr, PRIV (widget)->layout);
     }
 

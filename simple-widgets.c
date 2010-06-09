@@ -46,6 +46,28 @@ progress_simple_widget_init (ProgressSimpleWidget* self)
 }
 
 static void
+widget_map (GtkWidget* widget)
+{
+  GTK_WIDGET_CLASS (progress_simple_widget_parent_class)->map (widget);
+
+  if (PRIV (widget)->input_window)
+    {
+      gdk_window_show_unraised (PRIV (widget)->input_window);
+    }
+}
+
+static void
+widget_unmap (GtkWidget* widget)
+{
+  if (PRIV (widget)->input_window)
+    {
+      gdk_window_hide (PRIV (widget)->input_window);
+    }
+
+  GTK_WIDGET_CLASS (progress_simple_widget_parent_class)->unmap (widget);
+}
+
+static void
 widget_size_allocate (GtkWidget    * widget,
                       GtkAllocation* allocation)
 {
@@ -63,11 +85,14 @@ widget_size_allocate (GtkWidget    * widget,
 
 static void
 widget_state_changed (GtkWidget   * widget,
-                      GtkStateType  old_state G_GNUC_UNUSED)
+                      GtkStateType  old_state)
 {
   gtk_widget_queue_draw (widget);
 
-  g_print ("%p\n", GTK_WIDGET_CLASS (progress_simple_widget_parent_class)->state_changed);
+  if (GTK_WIDGET_CLASS (progress_simple_widget_parent_class)->state_changed)
+    {
+      GTK_WIDGET_CLASS (progress_simple_widget_parent_class)->state_changed (widget, old_state);
+    }
 }
 
 static void
@@ -108,6 +133,8 @@ progress_simple_widget_class_init (ProgressSimpleWidgetClass* self_class)
 {
   GtkWidgetClass* widget_class = GTK_WIDGET_CLASS (self_class);
 
+  widget_class->map           = widget_map;
+  widget_class->unmap         = widget_unmap;
   widget_class->size_allocate = widget_size_allocate;
   widget_class->state_changed = widget_state_changed;
   widget_class->realize       = widget_realize;

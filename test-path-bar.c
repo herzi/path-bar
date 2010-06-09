@@ -61,6 +61,11 @@ test_widget_windows (gpointer  data)
       gpointer  user_data = NULL;
       GList   * children = gdk_window_get_children (windows->data);
 
+      if (!gdk_window_is_visible (windows->data))
+        {
+          g_error ("the GdkWindow %p wasn't shown in map()", windows->data);
+        }
+
       gdk_window_get_user_data (windows->data, &user_data);
       if (!user_data)
         {
