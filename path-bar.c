@@ -91,22 +91,11 @@ expose_event (GtkWidget     * widget,
       if (element->layout)
         {
           PangoRectangle  logical;
-          cairo_path_t* path = cairo_copy_path (cr);
 
           pango_layout_get_extents (element->layout, NULL, &logical);
 
-          cairo_save (cr);
-          cairo_new_path (cr);
-          cairo_translate (cr, 0.0, 18.0 - pango_layout_get_baseline (element->layout) / PANGO_SCALE);
-          cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.75);
-          pango_cairo_show_layout (cr, element->layout);
-          cairo_restore (cr);
-
-          cairo_new_path (cr);
-          cairo_append_path (cr, path);
           cairo_translate (cr, logical.width / PANGO_SCALE + 4.0, 0.0);
           intern += logical.width / PANGO_SCALE + 4.0;
-          cairo_path_destroy (path);
         }
 
       if (iter->next)

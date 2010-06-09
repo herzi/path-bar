@@ -64,6 +64,17 @@ expose_event (GtkWidget     * widget,
                        gdk_pixbuf_get_width (PRIV (widget)->icon),
                        gdk_pixbuf_get_height (PRIV (widget)->icon));
       cairo_fill (cr);
+      cairo_translate (cr, gdk_pixbuf_get_width (PRIV (widget)->icon) + 4.0, 0.0);
+    }
+  if (PRIV (widget)->layout)
+    {
+      PangoRectangle  logical;
+
+      pango_layout_get_extents (PRIV (widget)->layout, NULL, &logical);
+
+      cairo_translate (cr, 0.0, widget->allocation.height / 2 - PANGO_PIXELS (logical.height) / 2);
+      cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.75);
+      pango_cairo_show_layout (cr, PRIV (widget)->layout);
     }
 
   cairo_destroy (cr);
