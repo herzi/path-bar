@@ -83,11 +83,7 @@ expose_event (GtkWidget     * widget,
           cairo_arc (cr, x + 4.5, 19.5, 4.0, 0.5 * G_PI, G_PI);
           cairo_arc (cr, x + 4.5, 4.5, 4.0, G_PI, 1.5 * G_PI);
         }
-      intern += 4.0;
-
-      gtk_container_propagate_expose (GTK_CONTAINER (widget), GTK_WIDGET (element), event);
-
-      intern += GTK_WIDGET (element)->allocation.width + 4.0;
+      intern += 4.0 + GTK_WIDGET (element)->allocation.width + 4.0;
 
       pattern = cairo_pattern_create_linear (x, 0.0, x + intern, 24.0);
       cairo_pattern_add_color_stop_rgba (pattern, 0.0, 0.0, 0.0, 0.0, 0.15);
@@ -114,6 +110,8 @@ expose_event (GtkWidget     * widget,
       cairo_fill_preserve (cr);
       cairo_pattern_destroy (pattern);
       cairo_restore (cr);
+
+      gtk_container_propagate_expose (GTK_CONTAINER (widget), GTK_WIDGET (element), event);
 
       cairo_stroke (cr);
     }
