@@ -43,6 +43,26 @@ add_gtk_widget_tests_for_type (GType  type)
   g_string_free (path, TRUE);
 }
 
+static void
+test_container_type (gpointer  data)
+{
+  GType  type = GPOINTER_TO_SIZE (data);
+
+  g_assert (g_type_is_a (type, GTK_TYPE_CONTAINER));
+}
+
+static void
+add_gtk_container_tests_for_type (GType  type)
+{
+  gchar const* name = g_type_name (type);
+  GString    * path = g_string_new ("");
+
+  g_string_append_printf (path, "/%s/<<GtkContainer>>/GType", name);
+  g_test_add_data_func (path->str, GSIZE_TO_POINTER (type), (void (*) ())test_container_type);
+
+  g_string_free (path, TRUE);
+}
+
 int
 main (int   argc,
       char**argv)
@@ -51,7 +71,9 @@ main (int   argc,
 
   add_gtk_widget_tests_for_type (PROGRESS_TYPE_SIMPLE_WIDGET);
   add_gtk_widget_tests_for_type (PROGRESS_TYPE_SIMPLE_CONTAINER);
+  add_gtk_container_tests_for_type (PROGRESS_TYPE_SIMPLE_CONTAINER);
   add_gtk_widget_tests_for_type (PROGRESS_TYPE_PATH_BAR);
+  add_gtk_container_tests_for_type (PROGRESS_TYPE_PATH_BAR);
   add_gtk_widget_tests_for_type (PROGRESS_TYPE_PATH_ELEMENT);
 
   return g_test_run ();
