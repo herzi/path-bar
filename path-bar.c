@@ -50,6 +50,7 @@ expose_event (GtkWidget     * widget,
   cairo_t* cr = gdk_cairo_create (event->window);
   GList  * children;
   GList  * iter;
+  gdouble  x = 0.0;
 
   gdk_cairo_region (cr, event->region);
   cairo_clip (cr);
@@ -62,8 +63,6 @@ expose_event (GtkWidget     * widget,
   cairo_set_line_width (cr, 1.0);
   cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.5);
   cairo_save (cr);
-  cairo_arc (cr, 4.5, 19.5, 4.0, 0.5 * G_PI, G_PI);
-  cairo_arc (cr, 4.5, 4.5, 4.0, G_PI, 1.5 * G_PI);
   children = gtk_container_get_children (GTK_CONTAINER (widget));
   for (iter = children; iter; iter = iter->next)
     {
@@ -72,18 +71,20 @@ expose_event (GtkWidget     * widget,
       if (iter->prev)
         {
           cairo_new_path (cr);
-          cairo_move_to (cr, 0.5, 23.5);
-          cairo_line_to (cr, 12.5, 12.0);
-          cairo_line_to (cr, 0.5, 0.5);
-          cairo_translate (cr, 12.0, 0.0);
+          cairo_move_to (cr, x + 0.5, 23.5);
+          cairo_line_to (cr, x + 12.5, 12.0);
+          cairo_line_to (cr, x + 0.5, 0.5);
           intern += 12.0;
         }
-      cairo_translate (cr, 4.0, 0.0);
+      else
+        {
+          cairo_arc (cr, x + 4.5, 19.5, 4.0, 0.5 * G_PI, G_PI);
+          cairo_arc (cr, x + 4.5, 4.5, 4.0, G_PI, 1.5 * G_PI);
+        }
       intern += 4.0;
 
       gtk_container_propagate_expose (GTK_CONTAINER (widget), GTK_WIDGET (element), event);
 
-      cairo_translate (cr, GTK_WIDGET (element)->allocation.width + 4.0, 0.0);
       intern += GTK_WIDGET (element)->allocation.width + 4.0;
 
       if (iter->next)
@@ -92,9 +93,9 @@ expose_event (GtkWidget     * widget,
           cairo_pattern_add_color_stop_rgba (pattern, 0.0, 0.0, 0.0, 0.0, 0.15);
           cairo_pattern_add_color_stop_rgba (pattern, 1.0, 1.0, 1.0, 1.0, 0.15);
 
-          cairo_line_to (cr, 0.5, 0.5);
-          cairo_line_to (cr, 12.5, 12.0);
-          cairo_line_to (cr, 0.5, 23.5);
+          cairo_line_to (cr, x + intern + 0.5, 0.5);
+          cairo_line_to (cr, x + intern + 12.5, 12.0);
+          cairo_line_to (cr, x + intern + 0.5, 23.5);
           cairo_close_path (cr);
 
           cairo_save (cr);
@@ -104,7 +105,7 @@ expose_event (GtkWidget     * widget,
           cairo_restore (cr);
 
           cairo_stroke (cr);
-          cairo_translate (cr, 1.0, 0.0);
+          x += intern + 1;
         }
     }
   g_list_free (children);
