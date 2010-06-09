@@ -11,6 +11,8 @@ demo: main.c libpathbar.a | Makefile
 	$(LINK) $(CFLAGS)
 
 libpathbar_a_SOURCES=\
+	gdk-window.c \
+	gdk-window.h \
 	path-bar.c \
 	path-bar.h \
 	path-element.c \

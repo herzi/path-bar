@@ -20,23 +20,125 @@
 
 #include "simple-widgets.h"
 
+#include "gdk-window.h"
+
+struct _ProgressSimpleWidgetPrivate
+{
+  guint32    use_input_window : 1;
+  GdkWindow* input_window;
+};
+
 struct _ProgressSimpleContainerPrivate
 {
   GList* children;
 };
+
+#define PRIV(i) (((ProgressSimpleWidget*)(i))->_private)
 
 G_DEFINE_TYPE (ProgressSimpleWidget, progress_simple_widget, GTK_TYPE_WIDGET);
 
 static void
 progress_simple_widget_init (ProgressSimpleWidget* self)
 {
+  PRIV (self) = G_TYPE_INSTANCE_GET_PRIVATE (self, PROGRESS_TYPE_SIMPLE_WIDGET, ProgressSimpleWidgetPrivate);
+
   gtk_widget_set_has_window (GTK_WIDGET (self), FALSE);
 }
 
 static void
-progress_simple_widget_class_init (ProgressSimpleWidgetClass* self_class G_GNUC_UNUSED)
-{}
+widget_size_allocate (GtkWidget    * widget,
+                      GtkAllocation* allocation)
+{
+  GTK_WIDGET_CLASS (progress_simple_widget_parent_class)->size_allocate (widget, allocation);
 
+  if (PRIV (widget)->input_window)
+    {
+      gdk_window_move_resize (PRIV (widget)->input_window,
+                              allocation->x,
+                              allocation->y,
+                              allocation->width,
+                              allocation->height);
+    }
+}
+
+static void
+widget_state_changed (GtkWidget   * widget,
+                      GtkStateType  old_state G_GNUC_UNUSED)
+{
+  gtk_widget_queue_draw (widget);
+
+  g_print ("%p\n", GTK_WIDGET_CLASS (progress_simple_widget_parent_class)->state_changed);
+}
+
+static void
+widget_realize (GtkWidget* widget)
+{
+  GTK_WIDGET_CLASS (progress_simple_widget_parent_class)->realize (widget);
+
+  if (PRIV (widget)->use_input_window)
+    {
+      PRIV (widget)->input_window = gfc_gdk_window_new (gtk_widget_get_parent_window (widget),
+                                                        "class", GDK_INPUT_ONLY,
+                                                        "x", widget->allocation.x,
+                                                        "y", widget->allocation.y,
+                                                        "width", widget->allocation.width,
+                                                        "height", widget->allocation.height,
+                                                        "event-mask", gtk_widget_get_events (widget) & (GDK_ALL_EVENTS_MASK & ~GDK_EXPOSURE_MASK),
+                                                        NULL);
+
+      gdk_window_set_user_data (PRIV (widget)->input_window, widget);
+    }
+}
+
+static void
+widget_unrealize (GtkWidget* widget)
+{
+  if (PRIV (widget)->input_window)
+    {
+      gdk_window_set_user_data (PRIV (widget)->input_window, NULL);
+      gdk_window_destroy (PRIV (widget)->input_window);
+      PRIV (widget)->input_window = NULL;
+    }
+
+  GTK_WIDGET_CLASS (progress_simple_widget_parent_class)->unrealize (widget);
+}
+
+static void
+progress_simple_widget_class_init (ProgressSimpleWidgetClass* self_class)
+{
+  GtkWidgetClass* widget_class = GTK_WIDGET_CLASS (self_class);
+
+  widget_class->size_allocate = widget_size_allocate;
+  widget_class->state_changed = widget_state_changed;
+  widget_class->realize       = widget_realize;
+  widget_class->unrealize     = widget_unrealize;
+
+  g_type_class_add_private (self_class, sizeof (ProgressSimpleWidgetPrivate));
+}
+
+void
+progress_simple_widget_set_use_input_window (ProgressSimpleWidget* self,
+                                             gboolean              use_input_window)
+{
+  g_return_if_fail (PROGRESS_IS_SIMPLE_WIDGET (self));
+  g_return_if_fail (use_input_window == TRUE || use_input_window == FALSE);
+
+  if (GTK_WIDGET_REALIZED (self))
+    {
+      g_warning ("%s(%s): you cannot change \"use_input_window\" after the widget is realized",
+                 G_STRFUNC, G_STRLOC);
+      return;
+    }
+
+  if (use_input_window == PRIV (self)->use_input_window)
+    {
+      return;
+    }
+
+  PRIV (self)->use_input_window = use_input_window;
+}
+
+#undef PRIV
 #define PRIV(i) (((ProgressSimpleContainer*)(i))->_private)
 
 G_DEFINE_TYPE (ProgressSimpleContainer, progress_simple_container, GTK_TYPE_CONTAINER);
@@ -84,6 +186,33 @@ forall (GtkContainer* container,
 }
 
 static void
+container_remove (GtkContainer* container,
+                  GtkWidget   * widget)
+{
+  GList* iter;
+  for (iter = PRIV (container)->children; iter; iter = iter->next)
+    {
+      if (iter->data == widget)
+        {
+          break;
+        }
+    }
+
+  if (!iter)
+    {
+      g_warning ("trying to remove widget of type %s from container of type %s (but the widget wasn't in the container)",
+                 G_OBJECT_TYPE_NAME (widget), G_OBJECT_TYPE_NAME (container));
+      return;
+    }
+
+  PRIV (container)->children = g_list_remove_link (PRIV (container)->children, iter);
+  gtk_widget_unparent (iter->data);
+  gtk_widget_destroy (iter->data);
+  g_object_unref (iter->data);
+  g_list_free (iter);
+}
+
+static void
 progress_simple_container_class_init (ProgressSimpleContainerClass* self_class)
 {
   GObjectClass     * object_class = G_OBJECT_CLASS (self_class);
@@ -93,6 +222,7 @@ progress_simple_container_class_init (ProgressSimpleContainerClass* self_class)
 
   container_class->add    = add;
   container_class->forall = forall;
+  container_class->remove = container_remove;
 
   g_type_class_add_private (self_class, sizeof (ProgressSimpleContainerPrivate));
 }

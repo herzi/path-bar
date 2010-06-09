@@ -25,8 +25,10 @@
 G_DEFINE_TYPE (ProgressPathElement, progress_path_element, PROGRESS_TYPE_SIMPLE_WIDGET);
 
 static void
-progress_path_element_init (ProgressPathElement* self G_GNUC_UNUSED)
-{}
+progress_path_element_init (ProgressPathElement* self)
+{
+  progress_simple_widget_set_use_input_window (PROGRESS_SIMPLE_WIDGET (self), TRUE);
+}
 
 static void
 finalize (GObject* object)
@@ -81,6 +83,24 @@ expose_event (GtkWidget     * widget,
   return FALSE;
 }
 
+static gboolean
+enter_notify_event (GtkWidget       * widget,
+                    GdkEventCrossing* event  G_GNUC_UNUSED)
+{
+  gtk_widget_set_state (widget, GTK_STATE_PRELIGHT);
+
+  return FALSE;
+}
+
+static gboolean
+leave_notify_event (GtkWidget       * widget,
+                    GdkEventCrossing* event  G_GNUC_UNUSED)
+{
+  gtk_widget_set_state (widget, GTK_STATE_NORMAL);
+
+  return FALSE;
+}
+
 static void
 style_set (GtkWidget* widget,
            GtkStyle * old_style)
@@ -129,11 +149,13 @@ progress_path_element_class_init (ProgressPathElementClass* self_class)
   GObjectClass  * object_class = G_OBJECT_CLASS (self_class);
   GtkWidgetClass* widget_class = GTK_WIDGET_CLASS (self_class);
 
-  object_class->finalize = finalize;
+  object_class->finalize           = finalize;
 
-  widget_class->expose_event = expose_event;
-  widget_class->size_request = size_request;
-  widget_class->style_set    = style_set;
+  widget_class->expose_event       = expose_event;
+  widget_class->enter_notify_event = enter_notify_event;
+  widget_class->leave_notify_event = leave_notify_event;
+  widget_class->size_request       = size_request;
+  widget_class->style_set          = style_set;
 }
 
 GtkWidget*

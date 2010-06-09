@@ -34,10 +34,14 @@ typedef struct _ProgressSimpleContainerClass   ProgressSimpleContainerClass;
 typedef struct _ProgressSimpleContainerPrivate ProgressSimpleContainerPrivate;
 
 #define PROGRESS_TYPE_SIMPLE_WIDGET         (progress_simple_widget_get_type ())
+#define PROGRESS_SIMPLE_WIDGET(i)           (G_TYPE_CHECK_INSTANCE_CAST ((i), PROGRESS_TYPE_SIMPLE_WIDGET, ProgressSimpleWidget))
+#define PROGRESS_IS_SIMPLE_WIDGET(i)        (G_TYPE_CHECK_INSTANCE_TYPE ((i), PROGRESS_TYPE_SIMPLE_WIDGET))
 
 #define PROGRESS_TYPE_SIMPLE_CONTAINER      (progress_simple_container_get_type ())
 
-GType  progress_simple_widget_get_type (void);
+GType  progress_simple_widget_get_type             (void);
+void   progress_simple_widget_set_use_input_window (ProgressSimpleWidget* widget,
+                                                    gboolean              use_input_window);
 
 GType  progress_simple_container_get_type (void);
 
