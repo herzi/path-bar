@@ -2,7 +2,13 @@ LINK=gcc -o $@ $^ -g -O2 -Wall -Wextra -I. $(shell pkg-config --libs gtk+-2.0)
 
 CFLAGS:=$(shell pkg-config --cflags gtk+-2.0) -I.
 
-all: demo
+all: demo test-path-bar
+
+check: all
+	./test-path-bar
+
+demo: main.c libpathbar.a | Makefile
+	$(LINK) $(CFLAGS)
 
 libpathbar_a_SOURCES=\
 	path-bar.c \
@@ -15,5 +21,5 @@ libpathbar_a_SOURCES=\
 libpathbar.a: $(patsubst %.c,%.o,$(filter %.c,$(libpathbar_a_SOURCES))) | Makefile
 	ar -rs $@ $^
 
-demo: main.c libpathbar.a | Makefile
+test-path-bar: test-path-bar.c libpathbar.a | Makefile
 	$(LINK) $(CFLAGS)

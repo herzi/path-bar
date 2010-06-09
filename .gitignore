@@ -1,3 +1,4 @@
 *.a
 demo
 *.o
+test-path-bar
