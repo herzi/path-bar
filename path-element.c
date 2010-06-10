@@ -92,8 +92,16 @@ expose_event (GtkWidget     * widget,
   cairo_close_path (cr);
 
   pattern = cairo_pattern_create_linear (0.0, 0.0, widget->allocation.width, widget->allocation.height);
-  cairo_pattern_add_color_stop_rgba (pattern, 0.0, 0.0, 0.0, 0.0, 0.15);
-  cairo_pattern_add_color_stop_rgba (pattern, 1.0, 1.0, 1.0, 1.0, 0.15);
+  if (gtk_widget_get_state (widget) == GTK_STATE_PRELIGHT)
+    {
+      cairo_pattern_add_color_stop_rgba (pattern, 0.0, 0.0, 0.0, 0.0, 0.15);
+      cairo_pattern_add_color_stop_rgba (pattern, 1.0, 1.0, 1.0, 1.0, 0.15);
+    }
+  else
+    {
+      cairo_pattern_add_color_stop_rgba (pattern, 0.0, 0.0, 0.0, 0.0, 0.25);
+      cairo_pattern_add_color_stop_rgba (pattern, 1.0, 1.0, 1.0, 1.0, 0.25);
+    }
 
   cairo_save (cr);
   cairo_set_source (cr, pattern);
@@ -131,11 +139,11 @@ expose_event (GtkWidget     * widget,
       cairo_translate (cr, 0.0, widget->allocation.height / 2 - PANGO_PIXELS (logical.height) / 2);
       if (gtk_widget_get_state (widget) == GTK_STATE_PRELIGHT)
         {
-          cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
+          cairo_set_source_rgb (cr, 0.15, 0.15, 0.25);
         }
       else
         {
-          cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.75);
+          cairo_set_source_rgb (cr, 0.0, 0.0, 0.0);
         }
       pango_cairo_show_layout (cr, PRIV (widget)->layout);
     }
