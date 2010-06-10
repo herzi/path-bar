@@ -68,6 +68,7 @@ ensure_path (GtkWidget* widget)
 
   cr = gdk_cairo_create (widget->window);
 
+  cairo_save (cr);
   cairo_translate (cr, widget->allocation.x, widget->allocation.y);
 
   if (!PRIV (widget)->first)
@@ -95,6 +96,7 @@ ensure_path (GtkWidget* widget)
     }
 
   cairo_close_path (cr);
+  cairo_restore (cr);
 
   PRIV (widget)->path = cairo_copy_path (cr);
   cairo_destroy (cr);
@@ -115,9 +117,9 @@ expose_event (GtkWidget     * widget,
   cairo_set_line_width (cr, 1.0);
   cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.5);
 
-  cairo_translate (cr, widget->allocation.x, widget->allocation.y);
-
   cairo_append_path (cr, PRIV (widget)->path);
+
+  cairo_translate (cr, widget->allocation.x, widget->allocation.y);
 
   pattern = cairo_pattern_create_linear (0.0, 0.0, widget->allocation.width, widget->allocation.height);
   if (gtk_widget_get_state (widget) == GTK_STATE_PRELIGHT)
