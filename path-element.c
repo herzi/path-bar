@@ -63,8 +63,6 @@ expose_event (GtkWidget     * widget,
     {
       cairo_translate (cr, 12.0, 0.0);
     }
-
-
   if (PRIV (widget)->icon)
     {
       cairo_save (cr);
@@ -94,9 +92,10 @@ expose_event (GtkWidget     * widget,
         }
       pango_cairo_show_layout (cr, PRIV (widget)->layout);
     }
-
-  cairo_set_source_rgba (cr, 1.0, 1.0, 0.0, 0.5);
-  cairo_paint (cr);
+  if (!PRIV (widget)->first)
+    {
+      //cairo_translate (cr, 12.0, 0.0);
+    }
 
   cairo_destroy (cr);
   return FALSE;
@@ -148,7 +147,6 @@ size_request (GtkWidget     * widget,
     {
       req_width += 12;
     }
-
   if (PRIV (widget)->icon)
     {
       requisition->height = MAX (requisition->height, gdk_pixbuf_get_height (PRIV (widget)->icon));
@@ -166,6 +164,10 @@ size_request (GtkWidget     * widget,
       requisition->height = MAX (requisition->height, PANGO_PIXELS_CEIL (rectangle.height));
     }
   req_width += 4;
+  if (!PRIV (widget)->last)
+    {
+      req_width += 12;
+    }
 
   requisition->width = MAX (requisition->width, req_width);
 
@@ -219,12 +221,29 @@ progress_path_element_set_first (ProgressPathElement* self,
   g_return_if_fail (PROGRESS_IS_PATH_ELEMENT (self));
   g_return_if_fail (first == TRUE || first == FALSE);
 
-  if (first = PRIV (self)->first)
+  if (first == PRIV (self)->first)
     {
       return;
     }
 
-  PRIV (self)->first = TRUE;
+  PRIV (self)->first = first;
+
+  gtk_widget_queue_resize (GTK_WIDGET (self));
+}
+
+void
+progress_path_element_set_last (ProgressPathElement* self,
+                                gboolean             last)
+{
+  g_return_if_fail (PROGRESS_IS_PATH_ELEMENT (self));
+  g_return_if_fail (last == TRUE || last == FALSE);
+
+  if (last == PRIV (self)->last)
+    {
+      return;
+    }
+
+  PRIV (self)->last = last;
 
   gtk_widget_queue_resize (GTK_WIDGET (self));
 }

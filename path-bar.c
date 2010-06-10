@@ -82,7 +82,7 @@ expose_event (GtkWidget     * widget,
           cairo_arc (cr, x + 4.5, 19.5, 4.0, 0.5 * G_PI, G_PI);
           cairo_arc (cr, x + 4.5, 4.5, 4.0, G_PI, 1.5 * G_PI);
         }
-      intern += GTK_WIDGET (element)->allocation.width;
+      intern += GTK_WIDGET (element)->allocation.width - 12;
 
       pattern = cairo_pattern_create_linear (x, 0.0, x + intern, 24.0);
       cairo_pattern_add_color_stop_rgba (pattern, 0.0, 0.0, 0.0, 0.0, 0.15);
@@ -145,7 +145,7 @@ size_allocate (GtkWidget    * widget,
 
       gtk_widget_size_allocate (iter->data, &child_allocation);
 
-      child_allocation.x += child_allocation.width + 1;
+      child_allocation.x += child_allocation.width + 1 - 12;
     }
   g_list_free (children);
 }
@@ -168,7 +168,14 @@ size_request (GtkWidget     * widget,
       gtk_widget_size_request (iter->data, &child_requisition);
       ProgressPathElement* element = iter->data;
 
-      req_width += child_requisition.width;
+      if (iter->prev)
+        {
+          req_width += child_requisition.width - 12;
+        }
+      else
+        {
+          req_width += child_requisition.width;
+        }
 
       if (iter->next)
         {
@@ -193,6 +200,19 @@ add (GtkContainer* container,
       /* TODO: consider moving this into an extra storage space on every widget (e.g. PackingInfo)
        * then update the packing info from a vfunc in the container */
       progress_path_element_set_first (PROGRESS_PATH_ELEMENT (child), TRUE);
+      progress_path_element_set_last (PROGRESS_PATH_ELEMENT (child), TRUE);
+    }
+  if (children)
+    {
+      GList* last = g_list_last (children);
+      if (PROGRESS_IS_PATH_ELEMENT (last->data))
+        {
+          progress_path_element_set_last (PROGRESS_PATH_ELEMENT (last->data), FALSE);
+        }
+      if (PROGRESS_IS_PATH_ELEMENT (child))
+        {
+          progress_path_element_set_last (PROGRESS_PATH_ELEMENT (child), TRUE);
+        }
     }
   g_list_free (children);
 

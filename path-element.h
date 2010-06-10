@@ -39,11 +39,14 @@ GtkWidget* progress_path_element_new       (gchar const        * icon,
                                             gchar const        * label);
 void       progress_path_element_set_first (ProgressPathElement* self,
                                             gboolean             first);
+void       progress_path_element_set_last  (ProgressPathElement* self,
+                                            gboolean             last);
 
 struct _ProgressPathElement
 {
   ProgressSimpleWidget        base_instance;
   guint32      first : 1;
+  guint32      last : 1;
   gchar      * icon_name;
   GdkPixbuf  * icon;
   gchar      * label;
