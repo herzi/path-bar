@@ -61,7 +61,6 @@ size_allocate (GtkWidget    * widget,
   for (iter = children; iter; iter = iter->next)
     {
       ProgressPathElement* element = iter->data;
-      gboolean             has_icon = FALSE;
 
       child_allocation.width = GTK_WIDGET (element)->requisition.width;
 

@@ -1,4 +1,7 @@
-LINK=gcc -o $@ $^ -g -O2 -Wall -Wextra -I. $(shell pkg-config --libs gtk+-2.0)
+CC=gcc
+
+COMPILE=$(CC) -c -o $@ $< -g -O2 -Wall -Wextra
+LINK=$(CC) -o $@ $^ -g -O2 -Wall -Wextra $(shell pkg-config --libs gtk+-2.0)
 
 CFLAGS:=$(shell pkg-config --cflags gtk+-2.0) -I.
 
@@ -25,6 +28,9 @@ libpathbar_a_SOURCES=\
 	$(NULL)
 libpathbar.a: $(patsubst %.c,%.o,$(filter %.c,$(libpathbar_a_SOURCES))) | Makefile
 	ar -rs $@ $^
+
+%.o: %.c $(wildcard *.h)
+	$(COMPILE) $(CFLAGS)
 
 test-path-bar: test-path-bar.c libpathbar.a | Makefile
 	$(LINK) $(CFLAGS)
