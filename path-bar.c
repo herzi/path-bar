@@ -21,10 +21,11 @@
 #include "path-bar.h"
 
 #include "path-element.h"
+#include "shaped.h"
 
 struct _ProgressPathBarPrivate
 {
-  gpointer sliff;
+  GList* hits;
 };
 
 #define PRIV(i) (((ProgressPathBar*)(i))->_private)
@@ -32,15 +33,213 @@ struct _ProgressPathBarPrivate
 G_DEFINE_TYPE (ProgressPathBar, progress_path_bar, PROGRESS_TYPE_SIMPLE_CONTAINER);
 
 static void
-progress_path_bar_init (ProgressPathBar* self G_GNUC_UNUSED)
+progress_path_bar_init (ProgressPathBar* self)
 {
   PRIV (self) = G_TYPE_INSTANCE_GET_PRIVATE (self, PROGRESS_TYPE_PATH_BAR, ProgressPathBarPrivate);
+
+  /* FIXME: also enable GDK_POINTER_MOTION_HINT_MASK */
+  gtk_widget_add_events (GTK_WIDGET (self), GDK_POINTER_MOTION_MASK | GDK_LEAVE_NOTIFY_MASK);
+  progress_simple_widget_set_use_input_window (PROGRESS_SIMPLE_WIDGET (self), TRUE);
 }
 
 static void
 finalize (GObject* object)
 {
   G_OBJECT_CLASS (progress_path_bar_parent_class)->finalize (object);
+}
+
+static void
+update_hits (GtkWidget* widget,
+             gpointer   user_data)
+{
+  GdkEventMotion* event;
+  gpointer        container;
+  GList         **hits;
+  gdouble         x;
+  gdouble         y;
+  gint            x_i;
+  gint            y_i;
+
+  hits = user_data;
+  event = (*hits)->data;
+
+  x = event->x;
+  y = event->y;
+
+  gdk_window_get_user_data (event->window, &container);
+  gtk_widget_translate_coordinates (container,
+                                    widget,
+                                    x - GTK_WIDGET (container)->allocation.x, y - GTK_WIDGET (container)->allocation.y,
+                                    &x_i,
+                                    &y_i);
+  event->x = x_i + widget->allocation.x;
+  event->y = y_i + widget->allocation.y;
+
+  if (progress_shaped_test_hit (PROGRESS_SHAPED (widget), event))
+    {
+      if (G_UNLIKELY ((*hits)->next))
+        {
+          *hits = g_list_insert_before (*hits, (*hits)->next, g_object_ref (widget));
+        }
+      else
+        {
+          *hits = g_list_append (*hits, g_object_ref (widget));
+        }
+    }
+
+  event->x = x;
+  event->y = y;
+}
+
+static int
+compare_hits (gconstpointer a, gconstpointer b)
+{
+  return a - b;
+}
+
+static inline void
+emit_enter (GtkWidget     * parent G_GNUC_UNUSED,
+            GtkWidget     * child,
+            GdkEventMotion* event)
+{
+  GdkEvent* e = gdk_event_new (GDK_ENTER_NOTIFY);
+  e->crossing.window = g_object_ref (event->window);
+  e->crossing.send_event = FALSE;
+  e->crossing.subwindow = NULL;
+  e->crossing.time = event->time;
+  e->crossing.x = event->x;
+  e->crossing.y = event->y;
+  e->crossing.x_root = event->x_root;
+  e->crossing.y_root = event->y_root;
+  e->crossing.mode = GDK_CROSSING_NORMAL;
+  e->crossing.detail = GDK_NOTIFY_UNKNOWN;
+  e->crossing.focus = FALSE;
+  e->crossing.state = event->state;
+
+  gtk_widget_event (child, e);
+
+  gdk_event_free (e);
+}
+
+static inline void
+emit_leave (GtkWidget* parent G_GNUC_UNUSED,
+            GtkWidget* child,
+            GdkEvent * event)
+{
+  GdkEvent* e = gdk_event_new (GDK_LEAVE_NOTIFY);
+
+  switch (event->type)
+    {
+    case GDK_MOTION_NOTIFY:
+      e->crossing.window = g_object_ref (event->motion.window);
+      e->crossing.time = event->motion.time;
+      e->crossing.x = event->motion.x;
+      e->crossing.y = event->motion.y;
+      e->crossing.x_root = event->motion.x_root;
+      e->crossing.y_root = event->motion.y_root;
+      e->crossing.state = event->motion.state;
+      break;
+    case GDK_LEAVE_NOTIFY:
+      *e = *event;
+      g_object_ref (e->crossing.window);
+      break;
+    default:
+      g_warning ("%s(%s): unexpected event %d",
+                 G_STRFUNC, G_STRLOC,
+                 event->type);
+      gdk_event_free (e);
+      return;
+    }
+  e->crossing.send_event = FALSE;
+  e->crossing.subwindow = NULL;
+  e->crossing.mode = GDK_CROSSING_NORMAL;
+  e->crossing.detail = GDK_NOTIFY_UNKNOWN;
+  e->crossing.focus = FALSE;
+
+
+  gtk_widget_event (child, e);
+
+  gdk_event_free (e);
+}
+
+static gboolean
+motion_notify_event (GtkWidget     * widget,
+                     GdkEventMotion* event)
+{
+  GList* hits = g_list_prepend (NULL, event);
+  GList* new;
+  GList* old;
+
+  gtk_container_forall (GTK_CONTAINER (widget), update_hits, &hits);
+
+  hits = g_list_delete_link (hits, hits);
+  hits = g_list_sort (hits, compare_hits);
+
+  for (new = hits, old = PRIV (widget)->hits; new || old; )
+    {
+      if (!new)
+        {
+          emit_leave (widget, old->data, (GdkEvent*) event);
+
+          old = old->next;
+        }
+      else if (!old)
+        {
+          emit_enter (widget, new->data, event);
+
+          new = new->next;
+        }
+      else /* no one of the two is NULL */
+        {
+          if (old->data < new->data)
+            {
+              emit_leave (widget, old->data, (GdkEvent*) event);
+              old = old->next;
+            }
+          else if (old->data > new->data)
+            {
+              emit_enter (widget, new->data, event);
+              new = new->next;
+            }
+          else /* both are equal */
+            {
+              new = new->next;
+              old = old->next;
+            }
+        }
+    }
+
+  g_list_foreach (PRIV (widget)->hits, (GFunc)g_object_unref, NULL);
+  g_list_free (PRIV (widget)->hits);
+  PRIV (widget)->hits = hits;
+
+  if (GTK_WIDGET_CLASS (progress_path_bar_parent_class)->motion_notify_event)
+    {
+      return GTK_WIDGET_CLASS (progress_path_bar_parent_class)->motion_notify_event (widget, event);
+    }
+
+  return FALSE;
+}
+
+static gboolean
+leave_notify_event (GtkWidget       * widget,
+                    GdkEventCrossing* event)
+{
+  GList* iter;
+  for (iter = PRIV (widget)->hits; iter; iter = iter->next)
+    {
+      emit_leave (widget, iter->data, (GdkEvent*) event);
+      g_object_unref (iter->data);
+    }
+  g_list_free (PRIV (widget)->hits);
+  PRIV (widget)->hits = NULL;
+
+  if (GTK_WIDGET_CLASS (progress_path_bar_parent_class)->leave_notify_event)
+    {
+      return GTK_WIDGET_CLASS (progress_path_bar_parent_class)->leave_notify_event (widget, event);
+    }
+
+  return FALSE;
 }
 
 static void
@@ -141,8 +340,10 @@ progress_path_bar_class_init (ProgressPathBarClass* self_class)
 
   object_class->finalize = finalize;
 
-  widget_class->size_allocate = size_allocate;
-  widget_class->size_request  = size_request;
+  widget_class->motion_notify_event = motion_notify_event;
+  widget_class->leave_notify_event  = leave_notify_event;
+  widget_class->size_allocate       = size_allocate;
+  widget_class->size_request        = size_request;
 
   container_class->add = add;
 

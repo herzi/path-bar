@@ -28,10 +28,8 @@ G_DEFINE_TYPE_WITH_CODE (ProgressPathElement, progress_path_element, PROGRESS_TY
                          G_IMPLEMENT_INTERFACE (PROGRESS_TYPE_SHAPED, NULL));
 
 static void
-progress_path_element_init (ProgressPathElement* self)
+progress_path_element_init (ProgressPathElement* self G_GNUC_UNUSED)
 {
-  gtk_widget_add_events (GTK_WIDGET (self), GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
-  progress_simple_widget_set_use_input_window (PROGRESS_SIMPLE_WIDGET (self), TRUE);
 }
 
 static void

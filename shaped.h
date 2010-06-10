@@ -29,12 +29,21 @@ typedef struct _ProgressShaped      ProgressShaped;
 typedef struct _ProgressShapedIface ProgressShapedIface;
 
 #define PROGRESS_TYPE_SHAPED         (progress_shaped_get_type ())
+#define PROGRESS_SHAPED(i)           (G_TYPE_CHECK_INSTANCE_CAST ((i), PROGRESS_TYPE_SHAPED, ProgressShaped))
+#define PROGRESS_IS_SHAPED(i)        (G_TYPE_CHECK_INSTANCE_TYPE ((i), PROGRESS_TYPE_SHAPED))
+#define PROGRESS_SHAPED_GET_IFACE(i) (G_TYPE_INSTANCE_GET_INTERFACE ((i), PROGRESS_TYPE_SHAPED, ProgressShapedIface))
 
-GType  progress_shaped_get_type (void);
+GType     progress_shaped_get_type (void);
+gboolean  progress_shaped_test_hit (ProgressShaped* self,
+                                    GdkEventMotion* event);
 
 struct _ProgressShapedIface
 {
   GTypeInterface  base_interface;
+
+  /* vtable */
+  gboolean (*test_hit) (ProgressShaped* self,
+                        GdkEventMotion* event);
 };
 
 G_END_DECLS
