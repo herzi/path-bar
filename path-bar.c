@@ -133,8 +133,8 @@ size_allocate (GtkWidget    * widget,
   GTK_WIDGET_CLASS (progress_path_bar_parent_class)->size_allocate (widget, allocation);
 
   child_allocation.x = allocation->x + 4;
-  child_allocation.y = allocation->y + 4;
-  child_allocation.height = allocation->height - 8;
+  child_allocation.y = allocation->y;
+  child_allocation.height = allocation->height;
 
   children = gtk_container_get_children (GTK_CONTAINER (widget));
   for (iter = children; iter; iter = iter->next)
