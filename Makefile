@@ -23,6 +23,8 @@ libpathbar_a_SOURCES=\
 	path-bar.h \
 	path-element.c \
 	path-element.h \
+	shaped.c \
+	shaped.h \
 	simple-widgets.c \
 	simple-widgets.h \
 	$(NULL)
