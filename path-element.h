@@ -32,13 +32,18 @@ typedef struct _ProgressPathElementPrivate ProgressPathElementPrivate;
 #define PROGRESS_TYPE_PATH_ELEMENT         (progress_path_element_get_type ())
 #define PROGRESS_PATH_ELEMENT(i)           (G_TYPE_CHECK_INSTANCE_CAST ((i), PROGRESS_TYPE_PATH_ELEMENT, ProgressPathElement))
 
-GType      progress_path_element_get_type (void);
-GtkWidget* progress_path_element_new      (gchar const* icon,
-                                           gchar const* label);
+#define PROGRESS_IS_PATH_ELEMENT(i)        (G_TYPE_CHECK_INSTANCE_TYPE ((i), PROGRESS_TYPE_PATH_ELEMENT))
+
+GType      progress_path_element_get_type  (void);
+GtkWidget* progress_path_element_new       (gchar const        * icon,
+                                            gchar const        * label);
+void       progress_path_element_set_first (ProgressPathElement* self,
+                                            gboolean             first);
 
 struct _ProgressPathElement
 {
   ProgressSimpleWidget        base_instance;
+  guint32      first : 1;
   gchar      * icon_name;
   GdkPixbuf  * icon;
   gchar      * label;

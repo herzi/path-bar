@@ -59,6 +59,11 @@ expose_event (GtkWidget     * widget,
   cairo_clip (cr);
 
   cairo_translate (cr, widget->allocation.x + 4, widget->allocation.y);
+  if (!PRIV (widget)->first)
+    {
+      cairo_translate (cr, 12.0, 0.0);
+    }
+
 
   if (PRIV (widget)->icon)
     {
@@ -139,6 +144,11 @@ size_request (GtkWidget     * widget,
 {
   int req_width = 4;
 
+  if (!PRIV (widget)->first)
+    {
+      req_width += 12;
+    }
+
   if (PRIV (widget)->icon)
     {
       requisition->height = MAX (requisition->height, gdk_pixbuf_get_height (PRIV (widget)->icon));
@@ -200,6 +210,23 @@ progress_path_element_new (gchar const* icon,
     }
 
   return result;
+}
+
+void
+progress_path_element_set_first (ProgressPathElement* self,
+                                 gboolean             first)
+{
+  g_return_if_fail (PROGRESS_IS_PATH_ELEMENT (self));
+  g_return_if_fail (first == TRUE || first == FALSE);
+
+  if (first = PRIV (self)->first)
+    {
+      return;
+    }
+
+  PRIV (self)->first = TRUE;
+
+  gtk_widget_queue_resize (GTK_WIDGET (self));
 }
 
 /* vim:set et sw=2 cino=t0,f0,(0,{s,>2s,n-1s,^-1s,e2s: */

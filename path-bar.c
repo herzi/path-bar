@@ -76,7 +76,6 @@ expose_event (GtkWidget     * widget,
           cairo_move_to (cr, x + 0.5, 23.5);
           cairo_line_to (cr, x + 12.5, 12.0);
           cairo_line_to (cr, x + 0.5, 0.5);
-          intern += 12.0;
         }
       else
         {
@@ -142,14 +141,7 @@ size_allocate (GtkWidget    * widget,
       ProgressPathElement* element = iter->data;
       gboolean             has_icon = FALSE;
 
-      child_allocation.width = 0;
-
-      if (iter->prev)
-        {
-          child_allocation.x += 12;
-        }
-
-      child_allocation.width += GTK_WIDGET (element)->requisition.width;
+      child_allocation.width = GTK_WIDGET (element)->requisition.width;
 
       gtk_widget_size_allocate (iter->data, &child_allocation);
 
@@ -176,11 +168,6 @@ size_request (GtkWidget     * widget,
       gtk_widget_size_request (iter->data, &child_requisition);
       ProgressPathElement* element = iter->data;
 
-      if (iter->prev)
-        {
-          req_width += 12;
-        }
-
       req_width += child_requisition.width;
 
       if (iter->next)
@@ -197,16 +184,35 @@ size_request (GtkWidget     * widget,
 }
 
 static void
+add (GtkContainer* container,
+     GtkWidget   * child)
+{
+  GList* children = gtk_container_get_children (container);
+  if (!children && PROGRESS_IS_PATH_ELEMENT (child))
+    {
+      /* TODO: consider moving this into an extra storage space on every widget (e.g. PackingInfo)
+       * then update the packing info from a vfunc in the container */
+      progress_path_element_set_first (PROGRESS_PATH_ELEMENT (child), TRUE);
+    }
+  g_list_free (children);
+
+  GTK_CONTAINER_CLASS (progress_path_bar_parent_class)->add (container, child);
+}
+
+static void
 progress_path_bar_class_init (ProgressPathBarClass* self_class)
 {
-  GObjectClass  * object_class = G_OBJECT_CLASS (self_class);
-  GtkWidgetClass* widget_class = GTK_WIDGET_CLASS (self_class);
+  GObjectClass     * object_class    = G_OBJECT_CLASS (self_class);
+  GtkWidgetClass   * widget_class    = GTK_WIDGET_CLASS (self_class);
+  GtkContainerClass* container_class = GTK_CONTAINER_CLASS (self_class);
 
   object_class->finalize = finalize;
 
   widget_class->expose_event  = expose_event;
   widget_class->size_allocate = size_allocate;
   widget_class->size_request  = size_request;
+
+  container_class->add = add;
 
   g_type_class_add_private (self_class, sizeof (ProgressPathBarPrivate));
 }
