@@ -43,84 +43,6 @@ finalize (GObject* object)
   G_OBJECT_CLASS (progress_path_bar_parent_class)->finalize (object);
 }
 
-static gboolean
-expose_event (GtkWidget     * widget,
-              GdkEventExpose* event)
-{
-  cairo_t* cr = gdk_cairo_create (event->window);
-  GList  * children;
-  GList  * iter;
-  gdouble  x = 0.0;
-
-  gdk_cairo_region (cr, event->region);
-  cairo_clip (cr);
-
-  /* FIXME: respect allocation.x */
-  /* FIXME: respect alloaction.y */
-  /* FIXME: respect allocation.height */
-  /* FIXME: respect allocation.width */
-
-  cairo_set_line_width (cr, 1.0);
-  cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.5);
-
-  children = gtk_container_get_children (GTK_CONTAINER (widget));
-  for (iter = children; iter; iter = iter->next)
-    {
-      ProgressPathElement* element = iter->data;
-      cairo_pattern_t    * pattern;
-      double               intern = 0.0;
-
-      if (iter->prev)
-        {
-          cairo_new_path (cr);
-          cairo_move_to (cr, x + 0.5, 23.5);
-          cairo_line_to (cr, x + 12.5, 12.0);
-          cairo_line_to (cr, x + 0.5, 0.5);
-        }
-      else
-        {
-          cairo_arc (cr, x + 4.5, 19.5, 4.0, 0.5 * G_PI, G_PI);
-          cairo_arc (cr, x + 4.5, 4.5, 4.0, G_PI, 1.5 * G_PI);
-        }
-      intern += GTK_WIDGET (element)->allocation.width - 12;
-
-      pattern = cairo_pattern_create_linear (x, 0.0, x + intern, 24.0);
-      cairo_pattern_add_color_stop_rgba (pattern, 0.0, 0.0, 0.0, 0.0, 0.15);
-      cairo_pattern_add_color_stop_rgba (pattern, 1.0, 1.0, 1.0, 1.0, 0.15);
-
-      if (iter->next)
-        {
-          cairo_line_to (cr, x + intern + 0.5, 0.5);
-          cairo_line_to (cr, x + intern + 12.5, 12.0);
-          cairo_line_to (cr, x + intern + 0.5, 23.5);
-
-          x += intern + 1;
-        }
-      else
-        {
-          cairo_arc (cr, widget->allocation.width - 4.5, 4.5, 4.0, 1.5 * G_PI, 2.0 * G_PI);
-          cairo_arc (cr, widget->allocation.width - 4.5, 19.5, 4.0, 0.0, 0.5 * G_PI);
-        }
-
-      cairo_close_path (cr);
-
-      cairo_save (cr);
-      cairo_set_source (cr, pattern);
-      cairo_fill_preserve (cr);
-      cairo_pattern_destroy (pattern);
-      cairo_restore (cr);
-
-      gtk_container_propagate_expose (GTK_CONTAINER (widget), GTK_WIDGET (element), event);
-
-      cairo_stroke (cr);
-    }
-  g_list_free (children);
-
-  cairo_destroy (cr);
-
-  return FALSE;
-}
-
 static void
 size_allocate (GtkWidget    * widget,
                GtkAllocation* allocation)
@@ -145,7 +67,7 @@ size_allocate (GtkWidget    * widget,
 
       gtk_widget_size_allocate (iter->data, &child_allocation);
 
-      child_allocation.x += child_allocation.width + 1 - 12;
+      child_allocation.x += child_allocation.width - 12;
     }
   g_list_free (children);
 }
@@ -166,22 +88,14 @@ size_request (GtkWidget     * widget,
       GtkRequisition  child_requisition;
 
       gtk_widget_size_request (iter->data, &child_requisition);
-      ProgressPathElement* element = iter->data;
 
+      req_width += child_requisition.width;
       if (iter->prev)
         {
-          req_width += child_requisition.width - 12;
-        }
-      else
-        {
-          req_width += child_requisition.width;
+          req_width -= 12;
         }
 
-      if (iter->next)
-        {
-          req_width += 1;
-        }
-      req->height = MAX (req->height, 2 * 4 + child_requisition.height);
+      req->height = MAX (req->height, child_requisition.height);
     }
   g_list_free (children);
 
@@ -228,7 +142,6 @@ progress_path_bar_class_init (ProgressPathBarClass* self_class)
 
   object_class->finalize = finalize;
 
-  widget_class->expose_event  = expose_event;
   widget_class->size_allocate = size_allocate;
   widget_class->size_request  = size_request;
 

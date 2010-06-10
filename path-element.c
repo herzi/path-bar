@@ -54,15 +54,62 @@ static gboolean
 expose_event (GtkWidget     * widget,
               GdkEventExpose* event  G_GNUC_UNUSED)
 {
-  cairo_t* cr = gdk_cairo_create (widget->window);
+  cairo_pattern_t* pattern;
+  cairo_t        * cr = gdk_cairo_create (widget->window);
+
   gdk_cairo_region (cr, event->region);
   cairo_clip (cr);
 
-  cairo_translate (cr, widget->allocation.x + 4, widget->allocation.y);
+  cairo_set_line_width (cr, 1.0);
+  cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.5);
+
+  cairo_translate (cr, widget->allocation.x, widget->allocation.y);
+
+  if (!PRIV (widget)->first)
+    {
+      cairo_new_path (cr);
+      cairo_move_to (cr, 0.5, 23.5);
+      cairo_line_to (cr, 12.5, 12.0);
+      cairo_line_to (cr, 0.5, 0.5);
+    }
+  else
+    {
+      cairo_arc (cr, 4.5, 19.5, 4.0, 0.5 * G_PI, G_PI);
+      cairo_arc (cr, 4.5, 4.5, 4.0, G_PI, 1.5 * G_PI);
+    }
+  if (!PRIV (widget)->last)
+    {
+      cairo_line_to (cr, widget->allocation.width - 12.5, 0.5);
+      cairo_line_to (cr, widget->allocation.width - 0.5, 12.0);
+      cairo_line_to (cr, widget->allocation.width - 12.5, 23.5);
+    }
+  else
+    {
+      cairo_arc (cr, widget->allocation.width - 4.5, 4.5, 4.0, 1.5 * G_PI, 2.0 * G_PI);
+      cairo_arc (cr, widget->allocation.width - 4.5, 19.5, 4.0, 0.0, 0.5 * G_PI);
+    }
+
+  cairo_close_path (cr);
+
+  pattern = cairo_pattern_create_linear (0.0, 0.0, widget->allocation.width, widget->allocation.height);
+  cairo_pattern_add_color_stop_rgba (pattern, 0.0, 0.0, 0.0, 0.0, 0.15);
+  cairo_pattern_add_color_stop_rgba (pattern, 1.0, 1.0, 1.0, 1.0, 0.15);
+
+  cairo_save (cr);
+  cairo_set_source (cr, pattern);
+  cairo_fill_preserve (cr);
+  cairo_pattern_destroy (pattern);
+  cairo_restore (cr);
+
+  cairo_path_t* path = cairo_copy_path (cr);
+  cairo_new_path (cr);
+  cairo_save (cr);
+
   if (!PRIV (widget)->first)
     {
       cairo_translate (cr, 12.0, 0.0);
     }
+  cairo_translate (cr, 4.0, 0.0);
   if (PRIV (widget)->icon)
     {
       cairo_save (cr);
@@ -92,11 +139,12 @@ expose_event (GtkWidget     * widget,
         }
       pango_cairo_show_layout (cr, PRIV (widget)->layout);
     }
-  if (!PRIV (widget)->first)
-    {
-      //cairo_translate (cr, 12.0, 0.0);
-    }
+  cairo_restore (cr);
+  cairo_new_path (cr);
+  cairo_append_path (cr, path);
+  cairo_path_destroy (path);
 
+  cairo_stroke (cr);
   cairo_destroy (cr);
   return FALSE;
 }
@@ -149,7 +197,7 @@ size_request (GtkWidget     * widget,
     }
   if (PRIV (widget)->icon)
     {
-      requisition->height = MAX (requisition->height, gdk_pixbuf_get_height (PRIV (widget)->icon));
+      requisition->height = MAX (requisition->height, gdk_pixbuf_get_height (PRIV (widget)->icon) + 2 * 4);
       req_width += gdk_pixbuf_get_width (PRIV (widget)->icon);
     }
   if (PRIV (widget)->icon && PRIV (widget)->layout)
@@ -161,7 +209,7 @@ size_request (GtkWidget     * widget,
       PangoRectangle  rectangle;
       pango_layout_get_extents (PRIV (widget)->layout, NULL, &rectangle);
       req_width += PANGO_PIXELS_CEIL (rectangle.width);
-      requisition->height = MAX (requisition->height, PANGO_PIXELS_CEIL (rectangle.height));
+      requisition->height = MAX (requisition->height, PANGO_PIXELS_CEIL (rectangle.height) + 2 * 4);
     }
   req_width += 4;
   if (!PRIV (widget)->last)
