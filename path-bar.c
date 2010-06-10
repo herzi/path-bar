@@ -83,7 +83,7 @@ expose_event (GtkWidget     * widget,
           cairo_arc (cr, x + 4.5, 19.5, 4.0, 0.5 * G_PI, G_PI);
           cairo_arc (cr, x + 4.5, 4.5, 4.0, G_PI, 1.5 * G_PI);
         }
-      intern += GTK_WIDGET (element)->allocation.width + 4.0;
+      intern += GTK_WIDGET (element)->allocation.width;
 
       pattern = cairo_pattern_create_linear (x, 0.0, x + intern, 24.0);
       cairo_pattern_add_color_stop_rgba (pattern, 0.0, 0.0, 0.0, 0.0, 0.15);
@@ -153,7 +153,7 @@ size_allocate (GtkWidget    * widget,
 
       gtk_widget_size_allocate (iter->data, &child_allocation);
 
-      child_allocation.x += child_allocation.width + 4 + 1;
+      child_allocation.x += child_allocation.width + 1;
     }
   g_list_free (children);
 }
@@ -187,7 +187,6 @@ size_request (GtkWidget     * widget,
         {
           req_width += 1;
         }
-      req_width += 4;
       req->height = MAX (req->height, 2 * 4 + child_requisition.height);
     }
   g_list_free (children);

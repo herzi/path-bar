@@ -144,6 +144,10 @@ size_request (GtkWidget     * widget,
       requisition->height = MAX (requisition->height, gdk_pixbuf_get_height (PRIV (widget)->icon));
       req_width += gdk_pixbuf_get_width (PRIV (widget)->icon);
     }
+  if (PRIV (widget)->icon && PRIV (widget)->layout)
+    {
+      req_width += 4;
+    }
   if (PRIV (widget)->layout)
     {
       PangoRectangle  rectangle;
@@ -151,10 +155,7 @@ size_request (GtkWidget     * widget,
       req_width += PANGO_PIXELS_CEIL (rectangle.width);
       requisition->height = MAX (requisition->height, PANGO_PIXELS_CEIL (rectangle.height));
     }
-  if (PRIV (widget)->icon && PRIV (widget)->layout)
-    {
-      req_width += 4;
-    }
+  req_width += 4;
 
   requisition->width = MAX (requisition->width, req_width);
 
