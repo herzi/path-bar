@@ -83,7 +83,7 @@ expose_event (GtkWidget     * widget,
           cairo_arc (cr, x + 4.5, 19.5, 4.0, 0.5 * G_PI, G_PI);
           cairo_arc (cr, x + 4.5, 4.5, 4.0, G_PI, 1.5 * G_PI);
         }
-      intern += 4.0 + GTK_WIDGET (element)->allocation.width + 4.0;
+      intern += GTK_WIDGET (element)->allocation.width + 4.0;
 
       pattern = cairo_pattern_create_linear (x, 0.0, x + intern, 24.0);
       cairo_pattern_add_color_stop_rgba (pattern, 0.0, 0.0, 0.0, 0.0, 0.15);
@@ -132,7 +132,7 @@ size_allocate (GtkWidget    * widget,
 
   GTK_WIDGET_CLASS (progress_path_bar_parent_class)->size_allocate (widget, allocation);
 
-  child_allocation.x = allocation->x + 4;
+  child_allocation.x = allocation->x;
   child_allocation.y = allocation->y;
   child_allocation.height = allocation->height;
 
@@ -153,7 +153,7 @@ size_allocate (GtkWidget    * widget,
 
       gtk_widget_size_allocate (iter->data, &child_allocation);
 
-      child_allocation.x += child_allocation.width + 8 + 1;
+      child_allocation.x += child_allocation.width + 4 + 1;
     }
   g_list_free (children);
 }
@@ -180,7 +180,6 @@ size_request (GtkWidget     * widget,
         {
           req_width += 12;
         }
-      req_width += 4;
 
       req_width += child_requisition.width;
 

@@ -58,7 +58,7 @@ expose_event (GtkWidget     * widget,
   gdk_cairo_region (cr, event->region);
   cairo_clip (cr);
 
-  cairo_translate (cr, widget->allocation.x, widget->allocation.y);
+  cairo_translate (cr, widget->allocation.x + 4, widget->allocation.y);
 
   if (PRIV (widget)->icon)
     {
@@ -89,6 +89,9 @@ expose_event (GtkWidget     * widget,
         }
       pango_cairo_show_layout (cr, PRIV (widget)->layout);
     }
+
+  cairo_set_source_rgba (cr, 1.0, 1.0, 0.0, 0.5);
+  cairo_paint (cr);
 
   cairo_destroy (cr);
   return FALSE;
@@ -134,19 +137,23 @@ static void
 size_request (GtkWidget     * widget,
               GtkRequisition* requisition)
 {
-  int req_width = 0;
+  int req_width = 4;
 
   if (PRIV (widget)->icon)
     {
       requisition->height = MAX (requisition->height, gdk_pixbuf_get_height (PRIV (widget)->icon));
-      req_width += gdk_pixbuf_get_width (PRIV (widget)->icon) + 4;
+      req_width += gdk_pixbuf_get_width (PRIV (widget)->icon);
     }
   if (PRIV (widget)->layout)
     {
       PangoRectangle  rectangle;
       pango_layout_get_extents (PRIV (widget)->layout, NULL, &rectangle);
-      req_width += PANGO_PIXELS_CEIL (rectangle.width) + 4;
+      req_width += PANGO_PIXELS_CEIL (rectangle.width);
       requisition->height = MAX (requisition->height, PANGO_PIXELS_CEIL (rectangle.height));
+    }
+  if (PRIV (widget)->icon && PRIV (widget)->layout)
+    {
+      req_width += 4;
     }
 
   requisition->width = MAX (requisition->width, req_width);
