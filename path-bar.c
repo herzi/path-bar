@@ -149,7 +149,7 @@ size_allocate (GtkWidget    * widget,
           child_allocation.x += 12;
         }
 
-      child_allocation.width = GTK_WIDGET (element)->requisition.width;
+      child_allocation.width += GTK_WIDGET (element)->requisition.width;
 
       gtk_widget_size_allocate (iter->data, &child_allocation);
 
@@ -188,6 +188,7 @@ size_request (GtkWidget     * widget,
         {
           req_width += 1;
         }
+      req_width += 4;
       req->height = MAX (req->height, 2 * 4 + child_requisition.height);
     }
   g_list_free (children);

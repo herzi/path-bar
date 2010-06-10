@@ -84,6 +84,10 @@ main (int   argc,
   progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Programming"));
   progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, "GTK+");
   progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Path Bar"));
+  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Code"));
+  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Tests"));
+  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Automation"));
+  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Test Suite"));
 
   gtk_box_pack_start (GTK_BOX (box), path, FALSE, FALSE, 0);
   gtk_container_add (GTK_CONTAINER (window), box);
