@@ -44,19 +44,19 @@ void       progress_path_element_set_last  (ProgressPathElement* self,
 
 struct _ProgressPathElement
 {
-  ProgressSimpleWidget        base_instance;
+  ProgressSimpleWidgetImpl       base_instance;
   guint32      first : 1;
   guint32      last : 1;
   gchar      * icon_name;
   GdkPixbuf  * icon;
   gchar      * label;
   PangoLayout* layout;
-  ProgressPathElementPrivate* _private;
+  ProgressPathElementPrivate   * _private;
 };
 
 struct _ProgressPathElementClass
 {
-  ProgressSimpleWidgetClass   base_class;
+  ProgressSimpleWidgetImplClass  base_class;
 };
 
 G_END_DECLS

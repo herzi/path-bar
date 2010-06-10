@@ -24,7 +24,7 @@
 
 #define PRIV(i) ((ProgressPathElement*)(i))
 
-G_DEFINE_TYPE_WITH_CODE (ProgressPathElement, progress_path_element, PROGRESS_TYPE_SIMPLE_WIDGET,
+G_DEFINE_TYPE_WITH_CODE (ProgressPathElement, progress_path_element, PROGRESS_TYPE_SIMPLE_WIDGET_IMPL,
                          G_IMPLEMENT_INTERFACE (PROGRESS_TYPE_SHAPED, NULL));
 
 static void

@@ -26,12 +26,17 @@
 G_BEGIN_DECLS
 
 typedef struct _ProgressSimpleWidget        ProgressSimpleWidget;
-typedef struct _ProgressSimpleWidgetClass   ProgressSimpleWidgetClass;
-typedef struct _ProgressSimpleWidgetPrivate ProgressSimpleWidgetPrivate;
+typedef struct _ProgressSimpleWidgetIface   ProgressSimpleWidgetIface;
+
+typedef struct _ProgressSimpleWidgetImpl        ProgressSimpleWidgetImpl;
+typedef struct _ProgressSimpleWidgetImplClass   ProgressSimpleWidgetImplClass;
+typedef struct _ProgressSimpleWidgetImplPrivate ProgressSimpleWidgetImplPrivate;
 
 typedef struct _ProgressSimpleContainer        ProgressSimpleContainer;
 typedef struct _ProgressSimpleContainerClass   ProgressSimpleContainerClass;
 typedef struct _ProgressSimpleContainerPrivate ProgressSimpleContainerPrivate;
+
+#define PROGRESS_TYPE_SIMPLE_WIDGET_IMPL         (progress_simple_widget_impl_get_type ())
 
 #define PROGRESS_TYPE_SIMPLE_WIDGET         (progress_simple_widget_get_type ())
 #define PROGRESS_SIMPLE_WIDGET(i)           (G_TYPE_CHECK_INSTANCE_CAST ((i), PROGRESS_TYPE_SIMPLE_WIDGET, ProgressSimpleWidget))
@@ -43,15 +48,22 @@ GType  progress_simple_widget_get_type             (void);
 void   progress_simple_widget_set_use_input_window (ProgressSimpleWidget* widget,
                                                     gboolean              use_input_window);
 
+GType  progress_simple_widget_impl_get_type (void);
+
 GType  progress_simple_container_get_type (void);
 
-struct _ProgressSimpleWidget
+struct _ProgressSimpleWidgetIface
 {
-  GtkWidget                    base_instance;
-  ProgressSimpleWidgetPrivate* _private;
+  GTypeInterface  base_interface;
 };
 
-struct _ProgressSimpleWidgetClass
+struct _ProgressSimpleWidgetImpl
+{
+  GtkWidget                        base_instance;
+  ProgressSimpleWidgetImplPrivate* _private;
+};
+
+struct _ProgressSimpleWidgetImplClass
 {
   GtkWidgetClass               base_class;
 };
