@@ -7,6 +7,9 @@ all: demo test-path-bar
 check: all
 	./test-path-bar
 
+clean:
+	rm -rf demo libpathbar.a *.o test-path-bar
+
 demo: main.c libpathbar.a | Makefile
 	$(LINK) $(CFLAGS)
 

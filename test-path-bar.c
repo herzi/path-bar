@@ -218,8 +218,8 @@ main (int   argc,
   add_gtk_widget_tests_for_type (PROGRESS_TYPE_SIMPLE_WIDGET);
   add_gtk_widget_tests_for_type (PROGRESS_TYPE_SIMPLE_CONTAINER);
   add_gtk_container_tests_for_type (PROGRESS_TYPE_SIMPLE_CONTAINER);
-  add_gtk_widget_tests_for_type (PROGRESS_TYPE_PATH_ELEMENT);
   add_tests_for_path_bar ();
+  add_gtk_widget_tests_for_type (PROGRESS_TYPE_PATH_ELEMENT);
 
   return g_test_run ();
 }
