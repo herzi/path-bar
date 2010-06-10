@@ -25,8 +25,9 @@
 
 #define PRIV(i) ((ProgressPathElement*)(i))
 
+static void implement_shaped (ProgressShapedIface* iface);
 G_DEFINE_TYPE_WITH_CODE (ProgressPathElement, progress_path_element, PROGRESS_TYPE_SIMPLE_WIDGET_IMPL,
-                         G_IMPLEMENT_INTERFACE (PROGRESS_TYPE_SHAPED, NULL));
+                         G_IMPLEMENT_INTERFACE (PROGRESS_TYPE_SHAPED, implement_shaped));
 
 static void
 progress_path_element_init (ProgressPathElement* self G_GNUC_UNUSED)
@@ -295,6 +296,30 @@ progress_path_element_class_init (ProgressPathElementClass* self_class)
   widget_class->size_allocate      = size_allocate;
   widget_class->size_request       = size_request;
   widget_class->style_set          = style_set;
+}
+
+static gboolean
+test_hit (ProgressShaped* shaped,
+          GdkEventMotion* event)
+{
+  gboolean  result = FALSE;
+  cairo_t* cr = gdk_cairo_create (GTK_WIDGET (shaped)->window);
+
+  ensure_path (GTK_WIDGET (shaped));
+  cairo_append_path (cr, PRIV (shaped)->path);
+  cairo_set_line_width (cr, 1.0);
+
+  result = cairo_in_fill (cr, event->x, event->y) || cairo_in_stroke (cr, event->x, event->y);
+
+  cairo_destroy (cr);
+
+  return result;
+}
+
+static void
+implement_shaped (ProgressShapedIface* iface)
+{
+  iface->test_hit = test_hit;
 }
 
 GtkWidget*
