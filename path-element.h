@@ -47,6 +47,7 @@ struct _ProgressPathElement
   ProgressSimpleWidgetImpl       base_instance;
   guint32      first : 1;
   guint32      last : 1;
+  cairo_path_t* path;
   gchar      * icon_name;
   GdkPixbuf  * icon;
   gchar      * label;

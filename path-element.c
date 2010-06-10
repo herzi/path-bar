@@ -20,6 +20,7 @@
 
 #include "path-element.h"
 
+#include <string.h> /* memcmp() */
 #include "shaped.h"
 
 #define PRIV(i) ((ProgressPathElement*)(i))
@@ -47,22 +48,25 @@ finalize (GObject* object)
     {
       g_object_unref (element->layout);
     }
+  if (PRIV (object)->path)
+    {
+      cairo_path_destroy (PRIV (object)->path);
+    }
 
   G_OBJECT_CLASS (progress_path_element_parent_class)->finalize (object);
 }
 
-static gboolean
-expose_event (GtkWidget     * widget,
-              GdkEventExpose* event  G_GNUC_UNUSED)
+static void
+ensure_path (GtkWidget* widget)
 {
-  cairo_pattern_t* pattern;
-  cairo_t        * cr = gdk_cairo_create (widget->window);
+  cairo_t* cr;
 
-  gdk_cairo_region (cr, event->region);
-  cairo_clip (cr);
+  if (PRIV (widget)->path)
+    {
+      return;
+    }
 
-  cairo_set_line_width (cr, 1.0);
-  cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.5);
+  cr = gdk_cairo_create (widget->window);
 
   cairo_translate (cr, widget->allocation.x, widget->allocation.y);
 
@@ -91,6 +95,29 @@ expose_event (GtkWidget     * widget,
     }
 
   cairo_close_path (cr);
+
+  PRIV (widget)->path = cairo_copy_path (cr);
+  cairo_destroy (cr);
+}
+
+static gboolean
+expose_event (GtkWidget     * widget,
+              GdkEventExpose* event  G_GNUC_UNUSED)
+{
+  cairo_pattern_t* pattern;
+  cairo_t        * cr = gdk_cairo_create (widget->window);
+
+  gdk_cairo_region (cr, event->region);
+  cairo_clip (cr);
+
+  ensure_path (widget);
+
+  cairo_set_line_width (cr, 1.0);
+  cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.5);
+
+  cairo_translate (cr, widget->allocation.x, widget->allocation.y);
+
+  cairo_append_path (cr, PRIV (widget)->path);
 
   pattern = cairo_pattern_create_linear (0.0, 0.0, widget->allocation.width, widget->allocation.height);
   if (gtk_widget_get_state (widget) == GTK_STATE_PRELIGHT)
@@ -192,6 +219,27 @@ style_set (GtkWidget* widget,
     }
 
   GTK_WIDGET_CLASS (progress_path_element_parent_class)->style_set (widget, old_style);
+
+  if (PRIV (widget)->path)
+    {
+      cairo_path_destroy (PRIV (widget)->path);
+      PRIV (widget)->path = NULL;
+    }
+}
+
+static void
+size_allocate (GtkWidget    * widget,
+               GtkAllocation* allocation)
+{
+  gboolean needs_update = memcmp (allocation, &widget->allocation, sizeof (GtkAllocation));
+
+  GTK_WIDGET_CLASS (progress_path_element_parent_class)->size_allocate (widget, allocation);
+
+  if (needs_update && PRIV (widget)->path)
+    {
+      cairo_path_destroy (PRIV (widget)->path);
+      PRIV (widget)->path = NULL;
+    }
 }
 
 static void
@@ -242,6 +290,7 @@ progress_path_element_class_init (ProgressPathElementClass* self_class)
   widget_class->expose_event       = expose_event;
   widget_class->enter_notify_event = enter_notify_event;
   widget_class->leave_notify_event = leave_notify_event;
+  widget_class->size_allocate      = size_allocate;
   widget_class->size_request       = size_request;
   widget_class->style_set          = style_set;
 }
