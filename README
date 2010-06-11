@@ -1,0 +1,22 @@
+This is a prototype implementation of a path bar
+================================================
+
+This widget has been developed for my code editor (which I call Progress -- and
+which is not released as public code yet).
+
+Things it does ([+]) and it doesn't do ([-]):
+ + easily add path elements to the path bar
+ + path elements can have a shape
+ - path element's shape is not specified by the theme yet
+ - the whole widget set isn't themed yet
+ - there is not accessibility (A11Y) support
+ - some things aren't implemented yet (e.g. removal of widgets)
+
+
+NOTE: This is prototype code and patches are welcome. However, this code has been
+      included into my Progress source tree and fixes implemented there won't be
+      backported to this repository.
+
+NOTE: This code should be forked for your projects, but please respect the license
+      (LGPLv2.1+) and the copyright (100% my code)
+
