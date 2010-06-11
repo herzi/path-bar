@@ -33,6 +33,14 @@ struct _ProgressPathBarPrivate
   GList* hits;
 };
 
+enum
+{
+  SELECTION_CHANGED,
+  N_SIGNALS
+};
+
+guint signals[N_SIGNALS] = {0};
+
 #define PRIV(i) (((ProgressPathBar*)(i))->_private)
 
 static void update_hits (GtkWidget* widget,
@@ -418,6 +426,8 @@ element_clicked (ProgressPathElement* element,
       PRIV (self)->active = g_object_ref (element);
       progress_path_element_select (PRIV (self)->active);
     }
+
+  g_signal_emit (self, signals[SELECTION_CHANGED], 0, element);
 }
 
 static void
@@ -474,6 +484,13 @@ progress_path_bar_class_init (ProgressPathBarClass* self_class)
   widget_class->size_request         = size_request;
 
   container_class->add = add;
+
+  signals[SELECTION_CHANGED] = g_signal_new ("selection-new", G_OBJECT_CLASS_TYPE (self_class),
+                                             G_SIGNAL_ACTION, 0,
+                                             NULL, NULL,
+                                             g_cclosure_marshal_VOID__OBJECT,
+                                             G_TYPE_NONE, 1,
+                                             PROGRESS_TYPE_PATH_ELEMENT);
 
   g_type_class_add_private (self_class, sizeof (ProgressPathBarPrivate));
 }
