@@ -425,6 +425,9 @@ add (GtkContainer* container,
      GtkWidget   * child)
 {
   GList* children = gtk_container_get_children (container);
+
+  GTK_CONTAINER_CLASS (progress_path_bar_parent_class)->add (container, child);
+
   if (!children && PROGRESS_IS_PATH_ELEMENT (child))
     {
       /* TODO: consider moving this into an extra storage space on every widget (e.g. PackingInfo)
@@ -442,6 +445,7 @@ add (GtkContainer* container,
       if (PROGRESS_IS_PATH_ELEMENT (child))
         {
           progress_path_element_set_last (PROGRESS_PATH_ELEMENT (child), TRUE);
+          element_clicked (PROGRESS_PATH_ELEMENT (child), PROGRESS_PATH_BAR (container));
         }
     }
   g_list_free (children);
@@ -451,8 +455,6 @@ add (GtkContainer* container,
       g_signal_connect (child, "clicked",
                         G_CALLBACK (element_clicked), container);
     }
-
-  GTK_CONTAINER_CLASS (progress_path_bar_parent_class)->add (container, child);
 }
 
 static void
