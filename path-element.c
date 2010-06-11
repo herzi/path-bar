@@ -166,7 +166,7 @@ expose_event (GtkWidget     * widget,
   ensure_path (widget);
 
   cairo_set_line_width (cr, 1.0);
-  cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.5);
+  gdk_cairo_set_source_color (cr, &widget->style->dark[GTK_STATE_ACTIVE]);
 
   cairo_append_path (cr, PRIV (widget)->path);
 
@@ -360,12 +360,12 @@ progress_path_element_class_init (ProgressPathElementClass* self_class)
 
   widget_class->button_press_event   = button_press_event;
   widget_class->button_release_event = button_release_event;
-  widget_class->expose_event       = expose_event;
-  widget_class->enter_notify_event = enter_notify_event;
-  widget_class->leave_notify_event = leave_notify_event;
-  widget_class->size_allocate      = size_allocate;
-  widget_class->size_request       = size_request;
-  widget_class->style_set          = style_set;
+  widget_class->expose_event         = expose_event;
+  widget_class->enter_notify_event   = enter_notify_event;
+  widget_class->leave_notify_event   = leave_notify_event;
+  widget_class->size_allocate        = size_allocate;
+  widget_class->size_request         = size_request;
+  widget_class->style_set            = style_set;
 
   signals[CLICKED] = g_signal_new ("clicked", G_OBJECT_CLASS_TYPE (self_class),
                                    G_SIGNAL_ACTION, 0,
