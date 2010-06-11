@@ -23,6 +23,14 @@
 #include <string.h> /* memcmp() */
 #include "shaped.h"
 
+enum
+{
+  CLICKED,
+  N_SIGNALS
+};
+
+static guint  signals[N_SIGNALS] = {0};
+
 #define PRIV(i) ((ProgressPathElement*)(i))
 
 static void implement_shaped (ProgressShapedIface* iface);
@@ -55,6 +63,48 @@ finalize (GObject* object)
     }
 
   G_OBJECT_CLASS (progress_path_element_parent_class)->finalize (object);
+}
+
+static gboolean
+button_press_event (GtkWidget     * widget,
+                    GdkEventButton* event)
+{
+  if (event->type == GDK_BUTTON_PRESS && event->button == 1)
+    {
+      PRIV (widget)->button_press_time = event->time;
+      return TRUE;
+    }
+
+  if (GTK_WIDGET_CLASS (progress_path_element_parent_class)->button_press_event)
+    {
+      return GTK_WIDGET_CLASS (progress_path_element_parent_class)->button_press_event (widget, event);
+    }
+
+  return FALSE;
+}
+
+static gboolean
+button_release_event (GtkWidget     * widget,
+                      GdkEventButton* event)
+{
+  if (event->button == 1)
+    {
+      if (event->time - PRIV (widget)->button_press_time < 250)
+        {
+          PRIV (widget)->button_press_time = 0;
+          g_signal_emit (widget, signals[CLICKED], 0);
+          return TRUE;
+        }
+
+      PRIV (widget)->button_press_time = 0;
+    }
+
+  if (GTK_WIDGET_CLASS (progress_path_element_parent_class)->button_release_event)
+    {
+      return GTK_WIDGET_CLASS (progress_path_element_parent_class)->button_release_event (widget, event);
+    }
+
+  return FALSE;
 }
 
 static void
@@ -123,15 +173,20 @@ expose_event (GtkWidget     * widget,
   cairo_translate (cr, widget->allocation.x, widget->allocation.y);
 
   pattern = cairo_pattern_create_linear (0.0, 0.0, widget->allocation.width, widget->allocation.height);
-  if (gtk_widget_get_state (widget) == GTK_STATE_PRELIGHT)
+  switch (gtk_widget_get_state (widget))
     {
+    case GTK_STATE_PRELIGHT:
       cairo_pattern_add_color_stop_rgba (pattern, 0.0, 0.0, 0.0, 0.0, 0.15);
       cairo_pattern_add_color_stop_rgba (pattern, 1.0, 1.0, 1.0, 1.0, 0.15);
-    }
-  else
-    {
+      break;
+    case GTK_STATE_ACTIVE:
+      cairo_pattern_add_color_stop_rgba (pattern, 0.0, 0.0, 0.0, 0.0, 0.5);
+      cairo_pattern_add_color_stop_rgba (pattern, 1.0, 0.5, 0.5, 0.5, 0.5);
+      break;
+    default:
       cairo_pattern_add_color_stop_rgba (pattern, 0.0, 0.0, 0.0, 0.0, 0.25);
       cairo_pattern_add_color_stop_rgba (pattern, 1.0, 1.0, 1.0, 1.0, 0.25);
+      break;
     }
 
   cairo_save (cr);
@@ -192,7 +247,17 @@ static gboolean
 enter_notify_event (GtkWidget       * widget,
                     GdkEventCrossing* event  G_GNUC_UNUSED)
 {
-  gtk_widget_set_state (widget, GTK_STATE_PRELIGHT);
+  switch (gtk_widget_get_state (widget))
+    {
+    case GTK_STATE_NORMAL:
+      gtk_widget_set_state (widget, GTK_STATE_PRELIGHT);
+      break;
+    case GTK_STATE_ACTIVE:
+    case GTK_STATE_PRELIGHT:
+    case GTK_STATE_INSENSITIVE:
+    case GTK_STATE_SELECTED:
+      break;
+    }
 
   return FALSE;
 }
@@ -201,7 +266,10 @@ static gboolean
 leave_notify_event (GtkWidget       * widget,
                     GdkEventCrossing* event  G_GNUC_UNUSED)
 {
-  gtk_widget_set_state (widget, GTK_STATE_NORMAL);
+  if (gtk_widget_get_state (widget) == GTK_STATE_PRELIGHT)
+    {
+      gtk_widget_set_state (widget, GTK_STATE_NORMAL);
+    }
 
   return FALSE;
 }
@@ -290,12 +358,20 @@ progress_path_element_class_init (ProgressPathElementClass* self_class)
 
   object_class->finalize           = finalize;
 
+  widget_class->button_press_event   = button_press_event;
+  widget_class->button_release_event = button_release_event;
   widget_class->expose_event       = expose_event;
   widget_class->enter_notify_event = enter_notify_event;
   widget_class->leave_notify_event = leave_notify_event;
   widget_class->size_allocate      = size_allocate;
   widget_class->size_request       = size_request;
   widget_class->style_set          = style_set;
+
+  signals[CLICKED] = g_signal_new ("clicked", G_OBJECT_CLASS_TYPE (self_class),
+                                   G_SIGNAL_ACTION, 0,
+                                   NULL, NULL,
+                                   g_cclosure_marshal_VOID__VOID,
+                                   G_TYPE_NONE, 0);
 }
 
 static gboolean
@@ -348,6 +424,14 @@ progress_path_element_new (gchar const* icon,
 }
 
 void
+progress_path_element_select (ProgressPathElement* self)
+{
+  g_return_if_fail (PROGRESS_IS_PATH_ELEMENT (self));
+
+  gtk_widget_set_state (GTK_WIDGET (self), GTK_STATE_ACTIVE);
+}
+
+void
 progress_path_element_set_first (ProgressPathElement* self,
                                  gboolean             first)
 {
@@ -379,6 +463,14 @@ progress_path_element_set_last (ProgressPathElement* self,
   PRIV (self)->last = last;
 
   gtk_widget_queue_resize (GTK_WIDGET (self));
+}
+
+void
+progress_path_element_unselect (ProgressPathElement* self)
+{
+  g_return_if_fail (PROGRESS_IS_PATH_ELEMENT (self));
+
+  gtk_widget_set_state (GTK_WIDGET (self), GTK_STATE_NORMAL);
 }
 
 /* vim:set et sw=2 cino=t0,f0,(0,{s,>2s,n-1s,^-1s,e2s: */

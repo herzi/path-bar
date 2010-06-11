@@ -37,16 +37,19 @@ typedef struct _ProgressPathElementPrivate ProgressPathElementPrivate;
 GType      progress_path_element_get_type  (void);
 GtkWidget* progress_path_element_new       (gchar const        * icon,
                                             gchar const        * label);
+void       progress_path_element_select    (ProgressPathElement* self);
 void       progress_path_element_set_first (ProgressPathElement* self,
                                             gboolean             first);
 void       progress_path_element_set_last  (ProgressPathElement* self,
                                             gboolean             last);
+void       progress_path_element_unselect  (ProgressPathElement* self);
 
 struct _ProgressPathElement
 {
   ProgressSimpleWidgetImpl       base_instance;
-  guint32      first : 1;
-  guint32      last : 1;
+  guint32       first : 1;
+  guint32       last : 1;
+  guint32       button_press_time;
   cairo_path_t* path;
   gchar      * icon_name;
   GdkPixbuf  * icon;
