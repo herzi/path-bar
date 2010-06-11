@@ -28,7 +28,29 @@ test_widget_type (gpointer  data)
 {
   GType  type = GPOINTER_TO_SIZE (data);
 
-  g_assert (g_type_is_a (type, GTK_TYPE_WIDGET));
+  if (!g_type_is_a (type, GTK_TYPE_WIDGET))
+    {
+      GString* chain = g_string_new (g_type_name (type));
+      if (type != G_TYPE_OBJECT)
+        {
+          GType parent = g_type_parent (type);
+          g_string_append_printf (chain, " is a %s", g_type_name (parent));
+
+          for (; g_type_name (parent) ; parent = g_type_parent (parent))
+            {
+              g_print ("%d (%s)\n", parent, g_type_name (parent));
+              g_string_append_printf (chain, ", which is a %s", g_type_name (parent));
+            }
+          g_print ("%d (%s)\n", parent, g_type_name (parent));
+        }
+
+      g_warning ("The type %s doesn't derive from %s (%s)",
+                 g_type_name (type),
+                 g_type_name (GTK_TYPE_WIDGET),
+                 chain->str);
+
+      g_string_free (chain, TRUE);
+    }
 }
 
 static void
@@ -215,7 +237,7 @@ main (int   argc,
 {
   gtk_test_init (&argc, &argv, NULL);
 
-  add_gtk_widget_tests_for_type (PROGRESS_TYPE_SIMPLE_WIDGET);
+  add_gtk_widget_tests_for_type (PROGRESS_TYPE_SIMPLE_WIDGET_IMPL);
   add_gtk_widget_tests_for_type (PROGRESS_TYPE_SIMPLE_CONTAINER);
   add_gtk_container_tests_for_type (PROGRESS_TYPE_SIMPLE_CONTAINER);
   add_tests_for_path_bar ();
