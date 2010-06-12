@@ -153,6 +153,18 @@ ensure_path (GtkWidget* widget)
   cairo_destroy (cr);
 }
 
+static void
+my_gdk_cairo_pattern_add_color_stop (cairo_pattern_t* pattern,
+                                     double           offset,
+                                     GdkColor       * color)
+{
+  cairo_pattern_add_color_stop_rgb (pattern,
+                                    offset,
+                                    color->red / 65535.0,
+                                    color->green / 65535.0,
+                                    color->blue / 65535.0);
+}
+
 static gboolean
 expose_event (GtkWidget     * widget,
               GdkEventExpose* event  G_GNUC_UNUSED)
@@ -175,17 +187,23 @@ expose_event (GtkWidget     * widget,
   pattern = cairo_pattern_create_linear (0.0, 0.0, widget->allocation.width, widget->allocation.height);
   switch (gtk_widget_get_state (widget))
     {
+      GdkColor  color;
     case GTK_STATE_PRELIGHT:
-      cairo_pattern_add_color_stop_rgba (pattern, 0.0, 0.0, 0.0, 0.0, 0.15);
-      cairo_pattern_add_color_stop_rgba (pattern, 1.0, 1.0, 1.0, 1.0, 0.15);
+      color.red   = MIN (widget->style->mid[GTK_STATE_PRELIGHT].red   * 1.3, 65535);
+      color.green = MIN (widget->style->mid[GTK_STATE_PRELIGHT].green * 1.3, 65535);
+      color.blue  = MIN (widget->style->mid[GTK_STATE_PRELIGHT].blue  * 1.3, 65535);
+      gdk_colormap_alloc_color (gtk_widget_get_colormap (widget), &color, TRUE, TRUE);
+
+      my_gdk_cairo_pattern_add_color_stop (pattern, 0.2, &color);
+      my_gdk_cairo_pattern_add_color_stop (pattern, 0.9, &widget->style->light[GTK_STATE_PRELIGHT]);
       break;
     case GTK_STATE_ACTIVE:
-      cairo_pattern_add_color_stop_rgba (pattern, 0.0, 0.0, 0.0, 0.0, 0.5);
-      cairo_pattern_add_color_stop_rgba (pattern, 1.0, 0.5, 0.5, 0.5, 0.5);
+      my_gdk_cairo_pattern_add_color_stop (pattern, 0.2, &widget->style->dark[GTK_STATE_ACTIVE]);
+      my_gdk_cairo_pattern_add_color_stop (pattern, 0.9, &widget->style->mid[GTK_STATE_ACTIVE]);
       break;
     default:
-      cairo_pattern_add_color_stop_rgba (pattern, 0.0, 0.0, 0.0, 0.0, 0.25);
-      cairo_pattern_add_color_stop_rgba (pattern, 1.0, 1.0, 1.0, 1.0, 0.25);
+      my_gdk_cairo_pattern_add_color_stop (pattern, 0.2, &widget->style->mid[gtk_widget_get_state (widget)]);
+      my_gdk_cairo_pattern_add_color_stop (pattern, 0.9, &widget->style->light[gtk_widget_get_state (widget)]);
       break;
     }
 
