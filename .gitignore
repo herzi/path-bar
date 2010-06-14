@@ -2,3 +2,4 @@
 demo
 *.o
 test-path-bar
+*~
