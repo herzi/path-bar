@@ -135,7 +135,7 @@ recreate_hits (GtkWidget* widget,
   gdk_window_get_user_data (event->window, &container);
   gtk_widget_translate_coordinates (container,
                                     widget,
-                                    x - GTK_WIDGET (container)->allocation.x, y - GTK_WIDGET (container)->allocation.y,
+                                    x, y,
                                     &x_i,
                                     &y_i);
   event->x = x_i + widget->allocation.x;
@@ -214,7 +214,7 @@ emit_enter (GtkWidget* parent G_GNUC_UNUSED,
 }
 
 static inline void
-emit_leave (GtkWidget* parent G_GNUC_UNUSED,
+emit_leave (GtkWidget* parent,
             GtkWidget* child,
             GdkEvent * event)
 {
@@ -242,12 +242,12 @@ emit_leave (GtkWidget* parent G_GNUC_UNUSED,
       gdk_event_free (e);
       return;
     }
+
   e->crossing.send_event = FALSE;
   e->crossing.subwindow = NULL;
   e->crossing.mode = GDK_CROSSING_NORMAL;
   e->crossing.detail = GDK_NOTIFY_UNKNOWN;
   e->crossing.focus = FALSE;
-
 
   gtk_widget_event (child, e);
 
@@ -261,11 +261,6 @@ update_hits (GtkWidget* widget,
   GList* hits = g_list_prepend (NULL, event);
   GList* new;
   GList* old;
-
-  gdouble x;
-  gdouble y;
-
-  gdk_event_get_coords (event, &x, &y);
 
   gtk_container_forall (GTK_CONTAINER (widget), recreate_hits, &hits);
 

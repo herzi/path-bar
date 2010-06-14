@@ -334,6 +334,22 @@ container_unrealize (GtkWidget* widget)
 }
 
 static void
+container_size_allocate (GtkWidget    * widget,
+                         GtkAllocation* allocation)
+{
+  GTK_WIDGET_CLASS (progress_simple_container_parent_class)->size_allocate (widget, allocation);
+
+  if (PRIV (widget)->input_window)
+    {
+      gdk_window_move_resize (PRIV (widget)->input_window,
+                              allocation->x,
+                              allocation->y,
+                              allocation->width,
+                              allocation->height);
+    }
+}
+
+static void
 container_map (GtkWidget* widget)
 {
   GTK_WIDGET_CLASS (progress_simple_container_parent_class)->map (widget);
@@ -417,10 +433,11 @@ progress_simple_container_class_init (ProgressSimpleContainerClass* self_class)
   object_class->get_property = container_get_property;
   object_class->set_property = container_set_property;
 
-  widget_class->realize      = container_realize;
-  widget_class->unrealize    = container_unrealize;
-  widget_class->map          = container_map;
-  widget_class->unmap        = container_unmap;
+  widget_class->realize       = container_realize;
+  widget_class->unrealize     = container_unrealize;
+  widget_class->size_allocate = container_size_allocate;
+  widget_class->map           = container_map;
+  widget_class->unmap         = container_unmap;
 
   container_class->add    = add;
   container_class->forall = forall;
