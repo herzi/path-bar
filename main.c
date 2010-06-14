@@ -55,13 +55,30 @@ my_logger (gchar const   * domain,
   g_string_free (new_message, TRUE);
 }
 
+static GtkWidget*
+create_path_bar (gchar const* name)
+{
+  GtkWidget* path = progress_path_bar_new ();
+
+  gtk_widget_set_name (path, name);
+  progress_path_bar_append (PROGRESS_PATH_BAR (path), GTK_STOCK_HOME, NULL);
+  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Programming"));
+  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, "GTK+");
+  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Path Bar"));
+  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Code"));
+  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Tests"));
+  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Automation"));
+  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Test Suite"));
+
+  return path;
+}
+
 int
 main (int   argc,
       char**argv)
 {
   GLogFunc   logger = NULL;
   GtkWidget* box;
-  GtkWidget* path;
   GtkWidget* text;
   GtkWidget* scrolled;
   GtkWidget* window;
@@ -75,8 +92,7 @@ main (int   argc,
   gtk_init (&argc, &argv);
 
   window   = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  box      = gtk_vbox_new (FALSE, 0);
-  path     = progress_path_bar_new ();
+  box      = gtk_vbox_new (FALSE, 6);
   scrolled = gtk_scrolled_window_new (NULL, NULL);
   text     = gtk_text_view_new ();
 
@@ -84,19 +100,35 @@ main (int   argc,
   g_signal_connect (window, "destroy",
                     G_CALLBACK (gtk_main_quit), NULL);
 
-  progress_path_bar_append (PROGRESS_PATH_BAR (path), GTK_STOCK_HOME, NULL);
-  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Programming"));
-  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, "GTK+");
-  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Path Bar"));
-  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Code"));
-  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Tests"));
-  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Automation"));
-  progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Test Suite"));
-
   gtk_widget_modify_font (text,
                           pango_font_description_from_string ("Mono"));
+  gtk_text_buffer_set_text (gtk_text_view_get_buffer (GTK_TEXT_VIEW (text)),
+                            "style \"gradients-1\" {\n"
+                            "  \n"
+                            "}\n\n"
+                            "style \"gradients-2\" {\n"
+                            "  \n"
+                            "}\n\n"
+                            "style \"flat\" {\n"
+                            "  \n"
+                            "}\n\n"
+                            "style \"buttons\" {\n"
+                            "  \n"
+                            "}\n\n"
+                            "widget \"path-bar-1\" style \"gradients\";\n"
+                            "widget \"path-bar-2\" style \"flat\"\n"
+                            "widget \"path-bar-3\" style \"flat\"\n"
+                            "widget \"path-bar-4\" style \"buttons\";",
+                            -1);
 
-  gtk_box_pack_start (GTK_BOX (box), path, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (box), create_path_bar ("path-bar-1"),
+                      FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (box), create_path_bar ("path-bar-2"),
+                      FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (box), create_path_bar ("path-bar-3"),
+                      FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (box), create_path_bar ("path-bar-4"),
+                      FALSE, FALSE, 0);
   gtk_container_add (GTK_CONTAINER (scrolled), text);
   gtk_container_add (GTK_CONTAINER (box), scrolled);
   gtk_container_add (GTK_CONTAINER (window), box);
