@@ -60,9 +60,11 @@ main (int   argc,
       char**argv)
 {
   GLogFunc   logger = NULL;
-  GtkWidget* window;
   GtkWidget* box;
   GtkWidget* path;
+  GtkWidget* text;
+  GtkWidget* scrolled;
+  GtkWidget* window;
 
   logger = g_log_set_default_handler (my_logger, &logger);
   if (G_UNLIKELY (!logger))
@@ -72,9 +74,11 @@ main (int   argc,
 
   gtk_init (&argc, &argv);
 
-  window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  box    = gtk_vbox_new (FALSE, 0);
-  path   = progress_path_bar_new ();
+  window   = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  box      = gtk_vbox_new (FALSE, 0);
+  path     = progress_path_bar_new ();
+  scrolled = gtk_scrolled_window_new (NULL, NULL);
+  text     = gtk_text_view_new ();
 
   gtk_window_set_default_size (GTK_WINDOW (window), 400, 300);
   g_signal_connect (window, "destroy",
@@ -89,7 +93,12 @@ main (int   argc,
   progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Automation"));
   progress_path_bar_append (PROGRESS_PATH_BAR (path), NULL, N_("Test Suite"));
 
+  gtk_widget_modify_font (text,
+                          pango_font_description_from_string ("Mono"));
+
   gtk_box_pack_start (GTK_BOX (box), path, FALSE, FALSE, 0);
+  gtk_container_add (GTK_CONTAINER (scrolled), text);
+  gtk_container_add (GTK_CONTAINER (box), scrolled);
   gtk_container_add (GTK_CONTAINER (window), box);
 
   gtk_widget_show_all (window);
